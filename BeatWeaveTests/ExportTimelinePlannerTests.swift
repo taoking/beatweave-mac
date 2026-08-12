@@ -58,6 +58,18 @@ final class ExportTimelinePlannerTests: XCTestCase {
         }
     }
 
+    func testDeliveryPresetChangesTheCompleteExportSettings() {
+        let social = ExportDeliveryPreset.socialVertical.settings
+        let master = ExportDeliveryPreset.master4K.settings
+
+        XCTAssertEqual(social.codec, .h264)
+        XCTAssertEqual(social.width, 1_080)
+        XCTAssertEqual(social.height, 1_920)
+        XCTAssertEqual(master.codec, .hevc)
+        XCTAssertEqual(master.frameRate, .fps60)
+        XCTAssertEqual(ExportDeliveryPreset.closest(to: master), .master4K)
+    }
+
     private func clip(mediaID: UUID, start: Double, duration: Double) -> TimelineClip {
         TimelineClip(
             id: UUID(), mediaID: mediaID,

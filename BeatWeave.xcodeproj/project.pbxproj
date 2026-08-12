@@ -19,8 +19,11 @@
 		33996DD5851A852DEC764F74 /* ProjectCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63B1E6FEE8009F8DF5FDCBCC /* ProjectCodec.swift */; };
 		37131D76C1FAB12CEAF1392C /* BeatAnalysisModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC6B7EE48901964E0B4AC876 /* BeatAnalysisModel.swift */; };
 		38DDF5A4392D7D743B7D9E3E /* ProjectEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92AF823696F7F7B5463406E2 /* ProjectEditorView.swift */; };
+		3F623F7B397F0BE26585A282 /* ProxyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F8AA932DCA910E48B90D439 /* ProxyService.swift */; };
 		45883B3ED56407FC9E2155CB /* AutoCutEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10E2FE9DF72C9C845CBD4E3 /* AutoCutEngineTests.swift */; };
 		59C4D194435292CCBCCE845D /* ExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C6EB28CB71F4536EE7515C0 /* ExportView.swift */; };
+		5A25347F660888A3AF5093F2 /* MediaQualityAnalysisService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A6633523E23AF26AD2748E0 /* MediaQualityAnalysisService.swift */; };
+		5F63B955D32DEF0CB2B4B3A6 /* EditingControlsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 719B3EC83C8A43E3A45B2D2D /* EditingControlsTests.swift */; };
 		626D556ACABB31A80224B095 /* BeatAnalysisService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB73E889A9857D37C40CED88 /* BeatAnalysisService.swift */; };
 		64C9E8ABF554455B4CC0F721 /* TimelineEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 381A30C7AAAEF00F15E71A61 /* TimelineEngineTests.swift */; };
 		67833CE29A7F09C1A78D0DB5 /* WaveformServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85AD6EDCD49343EB2D67EF5A /* WaveformServiceTests.swift */; };
@@ -28,14 +31,18 @@
 		6AA94231B68AF2816A825408 /* AutoCutEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10BE75239C013E50F620237 /* AutoCutEngine.swift */; };
 		6F47476E6C053F21BB58E962 /* TimelineEditorModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A9DE88A3C1B7D1CF630AAC /* TimelineEditorModel.swift */; };
 		7EB2B81252EE2B04761A307F /* MediaLibraryEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AEBA8E88C10D3F5C2A465D2 /* MediaLibraryEditor.swift */; };
+		8A39E4C6C3CC68DA66CA2128 /* ProxyCacheStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88FFBAFC215E4A5E1AB48F20 /* ProxyCacheStore.swift */; };
+		8E098176D081F432E04F3FAC /* SmartMontageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA7F816EFB29608562A494C0 /* SmartMontageTests.swift */; };
 		8E3FF672E5612F7E3633B064 /* WaveformService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CCC84DFA8C41DA7ADB1F11E /* WaveformService.swift */; };
 		94B080BC2B88445A3A8B5A15 /* AutoCutModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1CDD04EAC97ED49DB023E63 /* AutoCutModel.swift */; };
+		9820B4D10381BF2E93EEE0FA /* MediaGenerationQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7B422BA7C4C1772F2A895EC /* MediaGenerationQueue.swift */; };
 		9BAA0386E2D24F4C83A0071C /* PlaybackService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFFF72B7777FDD6F4D859CB6 /* PlaybackService.swift */; };
 		9D72F0BEFAA457D824475D21 /* MediaLibraryEditorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EE663ABAF84FCCD6C8200E /* MediaLibraryEditorTests.swift */; };
 		9DA0721AA05F7F7B423BED32 /* TimelineEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10EF7BD0FD4DDD2CA1779BA /* TimelineEditorView.swift */; };
 		A05F300C78411A57FA0880BA /* ExportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37FE77FAA38CF49A3BEFE856 /* ExportServiceTests.swift */; };
 		AAC90F41EF41ECE6E47E0AE6 /* ProjectPackage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE6F42D282161B2AD8D42EB1 /* ProjectPackage.swift */; };
 		ACF17BBB1B93279D32CB3759 /* TimelineEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A013ECBF797103856FDCA4DE /* TimelineEngine.swift */; };
+		B7849A5F4CCAE726647C3C40 /* ProjectDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 192F754355FE100CCF1790AD /* ProjectDiagnostics.swift */; };
 		BB07E17C8D120B184AD362B0 /* MediaBrowserModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F586952C78AABC6C27F5A9EC /* MediaBrowserModel.swift */; };
 		BB0C197811077DFF5F325374 /* MediaBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 506C75F64E1F01D03BA5F7E1 /* MediaBrowserView.swift */; };
 		BDB36E0C49B44E2E457FD794 /* BeatWeaveApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611BD4A23FCFA669B3884C17 /* BeatWeaveApp.swift */; };
@@ -49,6 +56,8 @@
 		E32EF76E089970A2D24F8A3B /* WaveformModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E315DF24DB2D5B0C6675F9BC /* WaveformModel.swift */; };
 		E4F2C8C3FE297666CEC9E28B /* ProjectCodecTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D3330DEEF59DA038A08E208 /* ProjectCodecTests.swift */; };
 		ED111B20D95075282318E8F8 /* ThumbnailService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5BE59067415F0CC4E004758 /* ThumbnailService.swift */; };
+		F0EA289D138C8E241C0391DD /* EditingInspectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4C9A7BDDFB35DDA9A0245E /* EditingInspectorView.swift */; };
+		F3381DCD64F5CD603AC219D4 /* ProjectWorkflowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D9F3FBD18B09FEA18099FD /* ProjectWorkflowView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,7 +74,9 @@
 		0F231267CD3862AB2F5421F7 /* WaveformCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformCache.swift; sourceTree = "<group>"; };
 		13EE663ABAF84FCCD6C8200E /* MediaLibraryEditorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaLibraryEditorTests.swift; sourceTree = "<group>"; };
 		165A28F709C0B90378EA303A /* ExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportService.swift; sourceTree = "<group>"; };
+		192F754355FE100CCF1790AD /* ProjectDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectDiagnostics.swift; sourceTree = "<group>"; };
 		1CCC84DFA8C41DA7ADB1F11E /* WaveformService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformService.swift; sourceTree = "<group>"; };
+		2F8AA932DCA910E48B90D439 /* ProxyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyService.swift; sourceTree = "<group>"; };
 		34A9DE88A3C1B7D1CF630AAC /* TimelineEditorModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineEditorModel.swift; sourceTree = "<group>"; };
 		37FE77FAA38CF49A3BEFE856 /* ExportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportServiceTests.swift; sourceTree = "<group>"; };
 		381A30C7AAAEF00F15E71A61 /* TimelineEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineEngineTests.swift; sourceTree = "<group>"; };
@@ -80,17 +91,23 @@
 		58EB792C91596DD1F2ECA689 /* AutoCutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoCutView.swift; sourceTree = "<group>"; };
 		611BD4A23FCFA669B3884C17 /* BeatWeaveApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeatWeaveApp.swift; sourceTree = "<group>"; };
 		63B1E6FEE8009F8DF5FDCBCC /* ProjectCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectCodec.swift; sourceTree = "<group>"; };
+		719B3EC83C8A43E3A45B2D2D /* EditingControlsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditingControlsTests.swift; sourceTree = "<group>"; };
+		7A6633523E23AF26AD2748E0 /* MediaQualityAnalysisService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaQualityAnalysisService.swift; sourceTree = "<group>"; };
 		7A7CA94D51605B268C30A85A /* MediaSourceResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaSourceResolver.swift; sourceTree = "<group>"; };
 		7E9C68A9F4A18FCD1DC79E6B /* BeatWeave.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BeatWeave.entitlements; sourceTree = "<group>"; };
 		85AD6EDCD49343EB2D67EF5A /* WaveformServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformServiceTests.swift; sourceTree = "<group>"; };
+		88FFBAFC215E4A5E1AB48F20 /* ProxyCacheStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyCacheStore.swift; sourceTree = "<group>"; };
 		8D3330DEEF59DA038A08E208 /* ProjectCodecTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectCodecTests.swift; sourceTree = "<group>"; };
 		92AF823696F7F7B5463406E2 /* ProjectEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectEditorView.swift; sourceTree = "<group>"; };
 		A013ECBF797103856FDCA4DE /* TimelineEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineEngine.swift; sourceTree = "<group>"; };
+		AA4C9A7BDDFB35DDA9A0245E /* EditingInspectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditingInspectorView.swift; sourceTree = "<group>"; };
 		B10EF7BD0FD4DDD2CA1779BA /* TimelineEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineEditorView.swift; sourceTree = "<group>"; };
+		B3D9F3FBD18B09FEA18099FD /* ProjectWorkflowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectWorkflowView.swift; sourceTree = "<group>"; };
 		BCBF9EDCDB6B49237E260076 /* BeatAnalysisServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeatAnalysisServiceTests.swift; sourceTree = "<group>"; };
 		BE6F42D282161B2AD8D42EB1 /* ProjectPackage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectPackage.swift; sourceTree = "<group>"; };
 		BFA6D93F77875E5653F6D912 /* MediaImportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaImportServiceTests.swift; sourceTree = "<group>"; };
 		C1CDD04EAC97ED49DB023E63 /* AutoCutModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoCutModel.swift; sourceTree = "<group>"; };
+		C7B422BA7C4C1772F2A895EC /* MediaGenerationQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaGenerationQueue.swift; sourceTree = "<group>"; };
 		C8B8D5685331B312A3513527 /* BeatWeaveDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeatWeaveDocument.swift; sourceTree = "<group>"; };
 		D32197655EB1DB331AE31072 /* ViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewerView.swift; sourceTree = "<group>"; };
 		D7485A0579F17FEE29625B82 /* ExportTimelinePlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportTimelinePlan.swift; sourceTree = "<group>"; };
@@ -107,6 +124,7 @@
 		F48592CBDEA91F4598F3737A /* BeatWeave.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BeatWeave.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F586952C78AABC6C27F5A9EC /* MediaBrowserModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaBrowserModel.swift; sourceTree = "<group>"; };
 		F5BE59067415F0CC4E004758 /* ThumbnailService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailService.swift; sourceTree = "<group>"; };
+		FA7F816EFB29608562A494C0 /* SmartMontageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartMontageTests.swift; sourceTree = "<group>"; };
 		FC6B7EE48901964E0B4AC876 /* BeatAnalysisModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeatAnalysisModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -152,6 +170,7 @@
 			isa = PBXGroup;
 			children = (
 				92AF823696F7F7B5463406E2 /* ProjectEditorView.swift */,
+				B3D9F3FBD18B09FEA18099FD /* ProjectWorkflowView.swift */,
 			);
 			path = ProjectEditor;
 			sourceTree = "<group>";
@@ -178,6 +197,7 @@
 			children = (
 				C0711ACD0998EB2200EBD334 /* AutoCut */,
 				B45FE65733BAC98AAE058D13 /* BeatAnalysis */,
+				B6A9F52317E17DE67A9E8100 /* Editing */,
 				45C9B81B71AA78BACA035FD6 /* Export */,
 				589B1D3714AFA772F3343959 /* MediaBrowser */,
 				2B4950D6DC0697E5E9D8AE08 /* ProjectEditor */,
@@ -236,6 +256,7 @@
 			isa = PBXGroup;
 			children = (
 				63B1E6FEE8009F8DF5FDCBCC /* ProjectCodec.swift */,
+				192F754355FE100CCF1790AD /* ProjectDiagnostics.swift */,
 				F463380033C18FA887156F2C /* ProjectModels.swift */,
 				BE6F42D282161B2AD8D42EB1 /* ProjectPackage.swift */,
 			);
@@ -270,6 +291,14 @@
 			path = BeatAnalysis;
 			sourceTree = "<group>";
 		};
+		B6A9F52317E17DE67A9E8100 /* Editing */ = {
+			isa = PBXGroup;
+			children = (
+				AA4C9A7BDDFB35DDA9A0245E /* EditingInspectorView.swift */,
+			);
+			path = Editing;
+			sourceTree = "<group>";
+		};
 		B6AE317C41619A1663334763 /* BeatAnalysis */ = {
 			isa = PBXGroup;
 			children = (
@@ -302,12 +331,14 @@
 				E10E2FE9DF72C9C845CBD4E3 /* AutoCutEngineTests.swift */,
 				F2313D304382695BB2276B78 /* BeatAnalysisDSPTests.swift */,
 				BCBF9EDCDB6B49237E260076 /* BeatAnalysisServiceTests.swift */,
+				719B3EC83C8A43E3A45B2D2D /* EditingControlsTests.swift */,
 				37FE77FAA38CF49A3BEFE856 /* ExportServiceTests.swift */,
 				44154891EB49ACC592FC7893 /* ExportTimelinePlannerTests.swift */,
 				BFA6D93F77875E5653F6D912 /* MediaImportServiceTests.swift */,
 				13EE663ABAF84FCCD6C8200E /* MediaLibraryEditorTests.swift */,
 				8D3330DEEF59DA038A08E208 /* ProjectCodecTests.swift */,
 				4A1B718D92E1C814C77DA2FF /* ProjectPackageTests.swift */,
+				FA7F816EFB29608562A494C0 /* SmartMontageTests.swift */,
 				381A30C7AAAEF00F15E71A61 /* TimelineEngineTests.swift */,
 				85AD6EDCD49343EB2D67EF5A /* WaveformServiceTests.swift */,
 			);
@@ -347,8 +378,12 @@
 			isa = PBXGroup;
 			children = (
 				DB73E889A9857D37C40CED88 /* BeatAnalysisService.swift */,
+				C7B422BA7C4C1772F2A895EC /* MediaGenerationQueue.swift */,
 				52861946BF4A17382773693F /* MediaImportService.swift */,
+				7A6633523E23AF26AD2748E0 /* MediaQualityAnalysisService.swift */,
 				7A7CA94D51605B268C30A85A /* MediaSourceResolver.swift */,
+				88FFBAFC215E4A5E1AB48F20 /* ProxyCacheStore.swift */,
+				2F8AA932DCA910E48B90D439 /* ProxyService.swift */,
 				F5BE59067415F0CC4E004758 /* ThumbnailService.swift */,
 				1CCC84DFA8C41DA7ADB1F11E /* WaveformService.swift */,
 			);
@@ -432,12 +467,14 @@
 				45883B3ED56407FC9E2155CB /* AutoCutEngineTests.swift in Sources */,
 				2F19C3A0584BEB70BE62DE87 /* BeatAnalysisDSPTests.swift in Sources */,
 				21097EC2A559C7ABF3E24F52 /* BeatAnalysisServiceTests.swift in Sources */,
+				5F63B955D32DEF0CB2B4B3A6 /* EditingControlsTests.swift in Sources */,
 				A05F300C78411A57FA0880BA /* ExportServiceTests.swift in Sources */,
 				01AD28A0227E5DEC6B538759 /* ExportTimelinePlannerTests.swift in Sources */,
 				0022AC2A00A06E2D79D47437 /* MediaImportServiceTests.swift in Sources */,
 				9D72F0BEFAA457D824475D21 /* MediaLibraryEditorTests.swift in Sources */,
 				E4F2C8C3FE297666CEC9E28B /* ProjectCodecTests.swift in Sources */,
 				C70AC17A8D22D9167F3C0C7C /* ProjectPackageTests.swift in Sources */,
+				8E098176D081F432E04F3FAC /* SmartMontageTests.swift in Sources */,
 				64C9E8ABF554455B4CC0F721 /* TimelineEngineTests.swift in Sources */,
 				67833CE29A7F09C1A78D0DB5 /* WaveformServiceTests.swift in Sources */,
 			);
@@ -455,20 +492,27 @@
 				626D556ACABB31A80224B095 /* BeatAnalysisService.swift in Sources */,
 				BDB36E0C49B44E2E457FD794 /* BeatWeaveApp.swift in Sources */,
 				22B595953AF65F4E32D52471 /* BeatWeaveDocument.swift in Sources */,
+				F0EA289D138C8E241C0391DD /* EditingInspectorView.swift in Sources */,
 				683765AF6F09C1E6149F3F12 /* ExportModel.swift in Sources */,
 				1EE30E7099DBA4CE5E3746FA /* ExportService.swift in Sources */,
 				C5EBDC6A1C95663C2264F206 /* ExportTimelinePlan.swift in Sources */,
 				59C4D194435292CCBCCE845D /* ExportView.swift in Sources */,
 				BB07E17C8D120B184AD362B0 /* MediaBrowserModel.swift in Sources */,
 				BB0C197811077DFF5F325374 /* MediaBrowserView.swift in Sources */,
+				9820B4D10381BF2E93EEE0FA /* MediaGenerationQueue.swift in Sources */,
 				BEBADF7121BA66F7AA6F8408 /* MediaImportService.swift in Sources */,
 				7EB2B81252EE2B04761A307F /* MediaLibraryEditor.swift in Sources */,
+				5A25347F660888A3AF5093F2 /* MediaQualityAnalysisService.swift in Sources */,
 				1689C5BFCEB43F667A8AEC0F /* MediaSourceResolver.swift in Sources */,
 				9BAA0386E2D24F4C83A0071C /* PlaybackService.swift in Sources */,
 				33996DD5851A852DEC764F74 /* ProjectCodec.swift in Sources */,
+				B7849A5F4CCAE726647C3C40 /* ProjectDiagnostics.swift in Sources */,
 				38DDF5A4392D7D743B7D9E3E /* ProjectEditorView.swift in Sources */,
 				1164A1DBF1346EFDAD29A93B /* ProjectModels.swift in Sources */,
 				AAC90F41EF41ECE6E47E0AE6 /* ProjectPackage.swift in Sources */,
+				F3381DCD64F5CD603AC219D4 /* ProjectWorkflowView.swift in Sources */,
+				8A39E4C6C3CC68DA66CA2128 /* ProxyCacheStore.swift in Sources */,
+				3F623F7B397F0BE26585A282 /* ProxyService.swift in Sources */,
 				ED111B20D95075282318E8F8 /* ThumbnailService.swift in Sources */,
 				6F47476E6C053F21BB58E962 /* TimelineEditorModel.swift in Sources */,
 				9DA0721AA05F7F7B423BED32 /* TimelineEditorView.swift in Sources */,

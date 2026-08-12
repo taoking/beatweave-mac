@@ -167,7 +167,7 @@ private struct CompositionBuilder {
 
     func build(plan: ExportTimelinePlan, settings: ExportSettings) async throws -> BuiltComposition {
         let composition = AVMutableComposition()
-        var instructions: [AVVideoCompositionInstruction] = []
+        var instructions: [AVVideoCompositionInstructionProtocol] = []
         var audioParameters: [AVMutableAudioMixInputParameters] = []
         let renderSize = CGSize(width: settings.width, height: settings.height)
 
@@ -192,22 +192,42 @@ private struct CompositionBuilder {
                     toDuration: timelineDuration
                 )
             }
-            var layerConfiguration = AVVideoCompositionLayerInstruction.Configuration(trackID: compositionTrack.trackID)
+            let clipStart = segment.clip.timelineStart.cmTime
+            let clipEnd = CMTimeAdd(clipStart, timelineDuration)
+            var layerConfiguration = AVVideoCompositionLayerInstruction.Configuration(assetTrack: compositionTrack)
             let transform = try await videoTransform(
                 sourceTrack: sourceTrack,
                 renderSize: renderSize,
-                clipTransform: segment.clip.transform
+                clipTransform: segment.clip.transform,
+                contentMode: segment.clip.appearance?.contentMode ?? .fit
             )
-            layerConfiguration.setTransform(transform, at: segment.clip.timelineStart.cmTime)
-            layerConfiguration.setOpacity(Float(min(1, max(0, segment.clip.opacity))), at: segment.clip.timelineStart.cmTime)
-            let layerInstruction = AVVideoCompositionLayerInstruction(configuration: layerConfiguration)
-            let instruction = AVVideoCompositionInstruction(
-                configuration: AVVideoCompositionInstruction.Configuration(
-                    layerInstructions: [layerInstruction],
-                    requiredSourceSampleDataTrackIDs: [compositionTrack.trackID],
-                    timeRange: CMTimeRange(start: segment.clip.timelineStart.cmTime, duration: timelineDuration)
+            layerConfiguration.setTransform(transform, at: clipStart)
+            if let crop = segment.clip.appearance?.crop,
+               crop.clamped() != .fullFrame {
+                let naturalSize = try await sourceTrack.load(.naturalSize)
+                let normalizedCrop = crop.clamped()
+                let cropRect = CGRect(
+                    x: naturalSize.width * normalizedCrop.x,
+                    y: naturalSize.height * normalizedCrop.y,
+                    width: naturalSize.width * normalizedCrop.width,
+                    height: naturalSize.height * normalizedCrop.height
                 )
+                layerConfiguration.setCropRectangle(cropRect, at: clipStart)
+            }
+            applyTransitionOpacity(
+                to: &layerConfiguration,
+                clip: segment.clip,
+                start: clipStart,
+                end: clipEnd
             )
+            let layerInstruction = AVVideoCompositionLayerInstruction(configuration: layerConfiguration)
+            var instructionConfiguration = AVVideoCompositionInstruction.Configuration()
+            instructionConfiguration.timeRange = CMTimeRange(
+                start: segment.clip.timelineStart.cmTime,
+                duration: timelineDuration
+            )
+            instructionConfiguration.layerInstructions = [layerInstruction]
+            let instruction = AVVideoCompositionInstruction(configuration: instructionConfiguration)
             instructions.append(instruction)
         }
 
@@ -229,7 +249,10 @@ private struct CompositionBuilder {
                 at: segment.clip.timelineStart.cmTime
             )
             let parameters = AVMutableAudioMixInputParameters(track: compositionTrack)
-            parameters.setVolume(Float(min(1, max(0, segment.clip.volume))), at: segment.clip.timelineStart.cmTime)
+            let volume = segment.clip.isMuted == true
+                ? 0
+                : Float(min(1, max(0, segment.clip.volume * plan.masterVolume)))
+            parameters.setVolume(volume, at: segment.clip.timelineStart.cmTime)
             audioParameters.append(parameters)
         }
 
@@ -257,20 +280,19 @@ private struct CompositionBuilder {
                     applyMusicFades(
                         to: parameters,
                         track: musicSegment.track,
-                        insertedDuration: TimelineTime(seconds: availableSeconds)
+                        insertedDuration: TimelineTime(seconds: availableSeconds),
+                        masterVolume: plan.masterVolume
                     )
                     audioParameters.append(parameters)
                 }
             }
         }
 
-        let videoComposition = AVVideoComposition(
-            configuration: AVVideoComposition.Configuration(
-                frameDuration: CMTime(value: 1, timescale: CMTimeScale(settings.frameRate.rawValue)),
-                instructions: instructions.sorted { $0.timeRange.start < $1.timeRange.start },
-                renderSize: renderSize
-            )
-        )
+        var videoConfiguration = AVVideoComposition.Configuration()
+        videoConfiguration.frameDuration = CMTime(value: 1, timescale: CMTimeScale(settings.frameRate.rawValue))
+        videoConfiguration.instructions = instructions.sorted { $0.timeRange.start < $1.timeRange.start }
+        videoConfiguration.renderSize = renderSize
+        let videoComposition = AVVideoComposition(configuration: videoConfiguration)
         let audioMix: AVMutableAudioMix?
         if audioParameters.isEmpty {
             audioMix = nil
@@ -289,14 +311,21 @@ private struct CompositionBuilder {
     private func videoTransform(
         sourceTrack: AVAssetTrack,
         renderSize: CGSize,
-        clipTransform: ClipTransform
+        clipTransform: ClipTransform,
+        contentMode: ClipContentMode
     ) async throws -> CGAffineTransform {
         let naturalSize = try await sourceTrack.load(.naturalSize)
         let preferredTransform = try await sourceTrack.load(.preferredTransform)
         let transformedBounds = CGRect(origin: .zero, size: naturalSize).applying(preferredTransform)
         let orientedSize = CGSize(width: abs(transformedBounds.width), height: abs(transformedBounds.height))
         guard orientedSize.width > 0, orientedSize.height > 0 else { return preferredTransform }
-        let fittedScale = min(renderSize.width / orientedSize.width, renderSize.height / orientedSize.height)
+        let fittedScale: CGFloat
+        switch contentMode {
+        case .fit:
+            fittedScale = min(renderSize.width / orientedSize.width, renderSize.height / orientedSize.height)
+        case .fill:
+            fittedScale = max(renderSize.width / orientedSize.width, renderSize.height / orientedSize.height)
+        }
         let scale = fittedScale * clipTransform.scale
         let translatedX = ((renderSize.width - (orientedSize.width * scale)) / 2) - (transformedBounds.minX * scale) + clipTransform.positionX
         let translatedY = ((renderSize.height - (orientedSize.height * scale)) / 2) - (transformedBounds.minY * scale) + clipTransform.positionY
@@ -310,10 +339,11 @@ private struct CompositionBuilder {
     private func applyMusicFades(
         to parameters: AVMutableAudioMixInputParameters,
         track: MusicTrack,
-        insertedDuration: TimelineTime
+        insertedDuration: TimelineTime,
+        masterVolume: Double
     ) {
         let start = track.timelineStart.cmTime
-        let volume = Float(min(1, max(0, track.volume)))
+        let volume = Float(min(1, max(0, track.volume * masterVolume)))
         let fadeIn = min(track.fadeInDuration.seconds, insertedDuration.seconds)
         let fadeOut = min(track.fadeOutDuration.seconds, insertedDuration.seconds)
         if fadeIn > 0 {
@@ -334,6 +364,41 @@ private struct CompositionBuilder {
             )
         }
     }
+
+    private func applyTransitionOpacity(
+        to configuration: inout AVVideoCompositionLayerInstruction.Configuration,
+        clip: TimelineClip,
+        start: CMTime,
+        end: CMTime
+    ) {
+        let opacity = Float(min(1, max(0, clip.opacity)))
+        let maximumDuration = min(0.35, max(0, clip.timelineDuration.seconds / 2))
+        let transitionDuration = CMTime(seconds: maximumDuration, preferredTimescale: 600)
+
+        switch clip.transitionIn {
+        case .hardCut:
+            configuration.setOpacity(opacity, at: start)
+        case .crossDissolve, .dipToBlack:
+            configuration.setOpacity(0, at: start)
+            configuration.addOpacityRamp(.init(
+                timeRange: CMTimeRange(start: start, duration: transitionDuration),
+                start: 0,
+                end: opacity
+            ))
+        }
+        switch clip.transitionOut {
+        case .hardCut:
+            break
+        case .crossDissolve, .dipToBlack:
+            let transitionStart = CMTimeSubtract(end, transitionDuration)
+            configuration.addOpacityRamp(.init(
+                timeRange: CMTimeRange(start: transitionStart, duration: transitionDuration),
+                start: opacity,
+                end: 0
+            ))
+        }
+    }
+
 }
 
 private extension TimelineTime {

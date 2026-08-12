@@ -9,10 +9,16 @@ struct ExportView: View {
     let onSettingsMutation: () -> Void
 
     @State private var resolution: ExportResolutionPreset = .fullHDLandscape
+    @State private var deliveryPreset: ExportDeliveryPreset = .web1080p
 
     var body: some View {
         GroupBox("导出") {
             VStack(alignment: .leading, spacing: 10) {
+                Picker("交付预设", selection: $deliveryPreset) {
+                    ForEach(ExportDeliveryPreset.allCases) { preset in
+                        Text(preset.displayName).tag(preset)
+                    }
+                }
                 Picker("分辨率", selection: $resolution) {
                     ForEach(ExportResolutionPreset.allCases) { preset in
                         Text(preset.displayName).tag(preset)
@@ -61,6 +67,11 @@ struct ExportView: View {
             }
             .pickerStyle(.menu)
             .onAppear {
+                resolution = ExportResolutionPreset.closest(to: settings)
+                deliveryPreset = ExportDeliveryPreset.closest(to: settings)
+            }
+            .onChange(of: deliveryPreset) { _, preset in
+                settings = preset.settings
                 resolution = ExportResolutionPreset.closest(to: settings)
             }
             .onChange(of: resolution) { _, preset in

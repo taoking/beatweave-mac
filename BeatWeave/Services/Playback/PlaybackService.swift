@@ -7,11 +7,13 @@ final class PlaybackService {
     let player = AVPlayer()
 
     private let resolver = MediaSourceResolver()
+    private let proxyCacheStore = ProxyCacheStore()
     private var scopedURL: URL?
 
     var currentMediaID: UUID?
     var errorMessage: String?
     var currentTimeSeconds = 0.0
+    var isUsingProxy = false
     private var timeObserver: Any?
 
     init() {
@@ -25,7 +27,7 @@ final class PlaybackService {
         }
     }
 
-    func preview(_ media: MediaReference?) {
+    func preview(_ media: MediaReference?, proxyData: Data? = nil) {
         guard let media else {
             stop()
             return
@@ -33,7 +35,14 @@ final class PlaybackService {
 
         Task {
             do {
-                let url = try await resolver.resolvedURL(for: media)
+                let url: URL
+                if let proxyData, media.proxy != nil {
+                    url = try await proxyCacheStore.materializedURL(for: media.id, data: proxyData)
+                    isUsingProxy = true
+                } else {
+                    url = try await resolver.resolvedURL(for: media)
+                    isUsingProxy = false
+                }
                 releaseSecurityScope()
                 if url.startAccessingSecurityScopedResource() {
                     scopedURL = url
@@ -45,6 +54,7 @@ final class PlaybackService {
             } catch {
                 player.replaceCurrentItem(with: nil)
                 currentMediaID = nil
+                isUsingProxy = false
                 errorMessage = error.localizedDescription
             }
         }
@@ -70,6 +80,7 @@ final class PlaybackService {
         player.replaceCurrentItem(with: nil)
         currentMediaID = nil
         currentTimeSeconds = 0
+        isUsingProxy = false
         releaseSecurityScope()
     }
 

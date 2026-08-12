@@ -20,6 +20,8 @@ struct ProjectEditorView: View {
             MediaBrowserView(
                 project: $document.project,
                 selectedMediaID: $selectedMediaID,
+                thumbnailCaches: $document.thumbnailCaches,
+                proxyCaches: $document.proxyCaches,
                 model: mediaBrowser,
                 onProjectMutation: markProjectModified,
                 onSetMusic: setMusic
@@ -52,12 +54,25 @@ struct ProjectEditorView: View {
                 }
                 .frame(minWidth: 620)
                 VStack(alignment: .leading, spacing: 12) {
+                    ProjectWorkflowView(
+                        project: $document.project,
+                        recoveredFromBackup: document.recoveredFromBackup,
+                        onProjectMutation: markProjectModified
+                    )
+                    EditingInspectorView(
+                        project: $document.project,
+                        selectedClipID: timeline.selectedClipID,
+                        timeline: timeline,
+                        onProjectMutation: markProjectModified
+                    )
                     AutoCutView(
                         media: document.project.mediaLibrary.items,
                         beatAnalysis: musicBeatAnalysis,
                         musicDuration: musicMedia?.duration,
+                        smartMontage: $document.project.smartMontage,
                         model: autoCut,
-                        onApply: applyAutoCut
+                        onApply: applyAutoCut,
+                        onProjectMutation: markProjectModified
                     )
                     ExportView(
                         project: document.project,
@@ -76,7 +91,7 @@ struct ProjectEditorView: View {
             await mediaBrowser.refreshSourceStatuses(for: document.project.mediaLibrary.items)
         }
         .onChange(of: selectedMediaID) { _, _ in
-            playback.preview(selectedMedia)
+            playback.preview(selectedMedia, proxyData: selectedMedia.flatMap { document.proxyCaches[$0.id] })
         }
         .onChange(of: document.project.mediaLibrary.items) { _, items in
             Task {

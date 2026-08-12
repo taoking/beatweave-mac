@@ -22,6 +22,8 @@ struct AutoCutRequest: Sendable {
     var maximumClipDuration: TimelineTime
     var preserveSourceOrder: Bool
     var randomSeed: UInt64
+    var smartMontage: SmartMontageSettings? = nil
+    var prefersStrongBeats: Bool = false
 }
 
 struct AutoCutPlacement: Equatable, Sendable, Identifiable {
@@ -48,7 +50,7 @@ struct AutoCutPlan: Equatable, Sendable, Identifiable {
 
 enum AutoCutEngine {
     static func makePlan(for request: AutoCutRequest) -> AutoCutPlan {
-        let sourceMedia = request.selectedMedia.filter { $0.kind == .video && $0.duration > .zero }
+        let sourceMedia = rankedSources(for: request)
         guard request.targetRange.duration > .zero,
               request.minimumClipDuration > .zero,
               request.maximumClipDuration >= request.minimumClipDuration,
@@ -68,6 +70,7 @@ enum AutoCutEngine {
         var sourceCursor = 0
         var placements: [AutoCutPlacement] = []
         var usedMediaIDs = Set<UUID>()
+        var sourceOffsets: [UUID: Double] = [:]
         var skippedSegments = 0
 
         for (start, end) in zip(boundaries, boundaries.dropFirst()) {
@@ -81,11 +84,19 @@ enum AutoCutEngine {
                 skippedSegments += 1
                 continue
             }
+            let sourceStart: Double
+            if request.smartMontage != nil {
+                let nextOffset = sourceOffsets[media.id] ?? 0
+                sourceStart = nextOffset + duration <= media.duration.seconds ? nextOffset : 0
+                sourceOffsets[media.id] = sourceStart + duration
+            } else {
+                sourceStart = 0
+            }
             placements.append(
                 AutoCutPlacement(
                     id: UUID(),
                     mediaID: media.id,
-                    sourceRange: MediaTimeRange(start: .zero, duration: TimelineTime(seconds: duration)),
+                    sourceRange: MediaTimeRange(start: TimelineTime(seconds: sourceStart), duration: TimelineTime(seconds: duration)),
                     timelineStart: start
                 )
             )
@@ -119,7 +130,10 @@ enum AutoCutEngine {
     private static func cutBoundaries(for request: AutoCutRequest) -> [TimelineTime] {
         let rangeStart = request.targetRange.start.seconds
         let rangeEnd = rangeStart + request.targetRange.duration.seconds
-        let beats = request.beatAnalysis.beatTimes
+        let beatTimes = request.prefersStrongBeats
+            ? request.beatAnalysis.strongBeatTimes
+            : request.beatAnalysis.beatTimes
+        let beats = beatTimes
             .map(\.seconds)
             .filter { $0 > rangeStart && $0 < rangeEnd }
             .sorted()
@@ -141,6 +155,26 @@ enum AutoCutEngine {
             boundaries.append(TimelineTime(seconds: rangeEnd))
         }
         return boundaries
+    }
+
+    private static func rankedSources(for request: AutoCutRequest) -> [MediaReference] {
+        let eligible = request.selectedMedia.filter {
+            $0.kind == .video
+                && $0.duration > .zero
+                && request.smartMontage?.decisions[$0.id] != .excluded
+        }
+        guard let smartMontage = request.smartMontage else { return eligible }
+        return eligible.sorted { lhs, rhs in
+            let lhsDecision = smartMontage.decisions[lhs.id] ?? .included
+            let rhsDecision = smartMontage.decisions[rhs.id] ?? .included
+            if lhsDecision == .pinned || rhsDecision == .pinned {
+                return lhsDecision == .pinned && rhsDecision != .pinned
+            }
+            let lhsScore = smartMontage.analyses[lhs.id]?.overallScore ?? 0
+            let rhsScore = smartMontage.analyses[rhs.id]?.overallScore ?? 0
+            if lhsScore == rhsScore { return lhs.id.uuidString < rhs.id.uuidString }
+            return lhsScore > rhsScore
+        }
     }
 
     private static func nextSource(

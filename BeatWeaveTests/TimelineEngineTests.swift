@@ -154,6 +154,28 @@ final class TimelineEngineTests: XCTestCase {
         XCTAssertEqual(try XCTUnwrap(result.timeline.videoTracks[0].clips.last).timelineStart.seconds, 3, accuracy: 0.001)
     }
 
+    func testInsertAudioAddsClipToSpecifiedAudioTrack() throws {
+        let audio = MediaReference(
+            displayName: "fx.wav",
+            originalURL: URL(fileURLWithPath: "/fixtures/fx.wav"),
+            kind: .audio,
+            duration: TimelineTime(seconds: 3)
+        )
+        let target = AudioTrack()
+        let result = try XCTUnwrap(
+            TimelineEngine.insertAudio(
+                media: audio,
+                at: TimelineTime(seconds: 1),
+                intoAudioTrack: target.id,
+                in: Timeline(videoTracks: [], audioTracks: [target], musicTrack: nil, markers: [])
+            )
+        )
+
+        XCTAssertEqual(result.audioTracks[0].clips.count, 1)
+        XCTAssertEqual(result.audioTracks[0].clips[0].mediaID, audio.id)
+        XCTAssertEqual(result.audioTracks[0].clips[0].timelineStart.seconds, 1, accuracy: 0.001)
+    }
+
     @MainActor
     func testUndoAndRedoRestoreTimelineSnapshots() {
         let media = video(name: "undo.mov", duration: 2)
@@ -174,6 +196,40 @@ final class TimelineEngineTests: XCTestCase {
         XCTAssertTrue(project.timeline.videoTracks.isEmpty)
         XCTAssertTrue(model.redo(in: &project))
         XCTAssertEqual(project.timeline.videoTracks[0].clips.count, 1)
+    }
+
+    @MainActor
+    func testBatchSelectionCanMoveClipsToAnotherVideoTrackAndUndo() {
+        let first = makeClip(start: 0, duration: 2)
+        let second = makeClip(start: 2, duration: 2)
+        var project = ProjectFile.new()
+        let destination = VideoTrack()
+        project.timeline.videoTracks = [VideoTrack(clips: [first, second]), destination]
+        let model = TimelineEditorModel()
+        model.selectClip(first.id, extendingSelection: false)
+        model.selectClip(second.id, extendingSelection: true)
+
+        XCTAssertTrue(model.moveSelectedClips(toVideoTrack: destination.id, in: &project))
+        XCTAssertTrue(project.timeline.videoTracks[0].clips.isEmpty)
+        XCTAssertEqual(project.timeline.videoTracks[1].clips.map(\.id), [first.id, second.id])
+        XCTAssertTrue(model.undo(in: &project))
+        XCTAssertEqual(project.timeline.videoTracks[0].clips.map(\.id), [first.id, second.id])
+    }
+
+    @MainActor
+    func testBatchDeleteRemovesAllSelectedClipsInOneUndoStep() {
+        let first = makeClip(start: 0, duration: 2)
+        let second = makeClip(start: 2, duration: 2)
+        var project = ProjectFile.new()
+        project.timeline = timeline(with: [first, second])
+        let model = TimelineEditorModel()
+        model.selectClip(first.id, extendingSelection: false)
+        model.selectClip(second.id, extendingSelection: true)
+
+        XCTAssertTrue(model.deleteSelected(in: &project))
+        XCTAssertTrue(project.timeline.videoTracks[0].clips.isEmpty)
+        XCTAssertTrue(model.undo(in: &project))
+        XCTAssertEqual(project.timeline.videoTracks[0].clips.count, 2)
     }
 
     private func video(name: String, duration: Double) -> MediaReference {

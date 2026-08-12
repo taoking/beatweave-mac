@@ -6,6 +6,8 @@ import UniformTypeIdentifiers
 struct MediaBrowserView: View {
     @Binding var project: ProjectFile
     @Binding var selectedMediaID: UUID?
+    @Binding var thumbnailCaches: [UUID: Data]
+    @Binding var proxyCaches: [UUID: Data]
     @Bindable var model: MediaBrowserModel
     let onProjectMutation: () -> Void
     let onSetMusic: (MediaReference) -> Void
@@ -33,6 +35,19 @@ struct MediaBrowserView: View {
                                 onSetMusic(media)
                             }
                         }
+                        if media.kind == .video {
+                            if model.generatingProxyIDs.contains(media.id) {
+                                Text("正在生成代理…")
+                            } else if media.proxy != nil {
+                                Button("删除预览代理") {
+                                    removeProxy(for: media)
+                                }
+                            } else {
+                                Button("生成预览代理") {
+                                    generateProxy(for: media)
+                                }
+                            }
+                        }
                         if model.sourceStatus(for: media) == .missing {
                             Button("重新链接…") {
                                 relinkingMediaID = media.id
@@ -43,7 +58,13 @@ struct MediaBrowserView: View {
                         }
                     }
                     .task(id: media.id) {
-                        await model.thumbnails.loadThumbnail(for: media)
+                        if let data = await model.thumbnails.loadThumbnail(
+                            for: media,
+                            cachedData: thumbnailCaches[media.id]
+                        ), thumbnailCaches[media.id] != data {
+                            thumbnailCaches[media.id] = data
+                            onProjectMutation()
+                        }
                     }
                 }
             } header: {
@@ -150,9 +171,33 @@ struct MediaBrowserView: View {
             return
         }
         model.thumbnails.removeThumbnail(for: media.id)
+        thumbnailCaches[media.id] = nil
+        proxyCaches[media.id] = nil
+        Task { await model.removeMaterializedProxy(for: media.id) }
         if selectedMediaID == media.id {
             selectedMediaID = nil
         }
+        onProjectMutation()
+    }
+
+    private func generateProxy(for media: MediaReference) {
+        Task {
+            guard let generated = await model.generateProxy(for: media),
+                  let index = project.mediaLibrary.items.firstIndex(where: { $0.id == media.id })
+            else {
+                return
+            }
+            proxyCaches[media.id] = generated.data
+            project.mediaLibrary.items[index].proxy = generated.info
+            onProjectMutation()
+        }
+    }
+
+    private func removeProxy(for media: MediaReference) {
+        guard let index = project.mediaLibrary.items.firstIndex(where: { $0.id == media.id }) else { return }
+        proxyCaches[media.id] = nil
+        project.mediaLibrary.items[index].proxy = nil
+        Task { await model.removeMaterializedProxy(for: media.id) }
         onProjectMutation()
     }
 }
@@ -174,6 +219,11 @@ private struct MediaRow: View {
                     .lineLimit(1)
             }
             Spacer(minLength: 0)
+            if media.proxy != nil {
+                Image(systemName: "bolt.horizontal.circle.fill")
+                    .foregroundStyle(.blue)
+                    .accessibilityLabel("存在预览代理")
+            }
             sourceStatusView
         }
         .padding(.vertical, 3)

@@ -44,6 +44,39 @@ final class ProjectPackageTests: XCTestCase {
         XCTAssertEqual(contents.waveformCaches, [mediaID: cache])
     }
 
+    func testPackageRoundTripRestoresThumbnailAndProxyCaches() throws {
+        let project = ProjectFile.new(name: "缓存往返")
+        let thumbnailID = UUID()
+        let proxyID = UUID()
+        let contents = try ProjectPackage.readContents(from: ProjectPackage.makeFileWrapper(
+            for: project,
+            thumbnailCaches: [thumbnailID: Data([0x89, 0x50, 0x4E, 0x47])],
+            proxyCaches: [proxyID: Data([0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70])]
+        ))
+
+        XCTAssertEqual(contents.thumbnailCaches[thumbnailID], Data([0x89, 0x50, 0x4E, 0x47]))
+        XCTAssertEqual(contents.proxyCaches[proxyID], Data([0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70]))
+        XCTAssertFalse(contents.recoveredFromBackup)
+    }
+
+    func testPackageRecoversFromLastKnownGoodSnapshotWhenProjectJSONIsUnreadable() throws {
+        let timestamp = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-08-13T00:00:00Z"))
+        let previous = ProjectFile.new(name: "恢复快照", now: timestamp)
+        var current = previous
+        current.name = "当前但损坏的项目"
+        let validPackage = try ProjectPackage.makeFileWrapper(for: current, recoveryProject: previous)
+        let autosave = try XCTUnwrap(validPackage.fileWrappers?["autosave"])
+        let package = FileWrapper(directoryWithFileWrappers: [
+            ProjectPackage.projectFileName: FileWrapper(regularFileWithContents: Data("not json".utf8)),
+            "autosave": autosave
+        ])
+
+        let contents = try ProjectPackage.readContents(from: package)
+
+        XCTAssertEqual(contents.project, previous)
+        XCTAssertTrue(contents.recoveredFromBackup)
+    }
+
     func testPackageRoundTripPreservesBeatMarkers() throws {
         let timestamp = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-08-13T00:00:00Z"))
         var project = ProjectFile.new(name: "节拍持久化", now: timestamp)

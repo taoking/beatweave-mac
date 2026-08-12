@@ -23,6 +23,11 @@ struct ViewerView: View {
             HStack {
                 Text(selectedMedia?.displayName ?? "未选择媒体")
                     .lineLimit(1)
+                if playback.isUsingProxy {
+                    Label("代理预览", systemImage: "bolt.horizontal.circle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
                 Spacer()
                 Button {
                     playback.togglePlayback()

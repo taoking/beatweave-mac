@@ -13,6 +13,10 @@ struct ProjectFile: Codable, Equatable, Sendable {
     var mediaLibrary: MediaLibrary
     var timeline: Timeline
     var beatAnalysis: BeatAnalysis?
+    /// Optional smart-montage metadata keeps projects written before Phase 8 compatible.
+    var smartMontage: SmartMontageSettings? = nil
+    /// Optional editor preferences introduced after the MVP.
+    var editorKeyboardShortcuts: EditorKeyboardShortcuts? = nil
     var exportSettings: ExportSettings
 
     static func new(name: String = "未命名项目", now: Date = .now) -> ProjectFile {
@@ -36,14 +40,115 @@ struct ProjectFile: Codable, Equatable, Sendable {
     }
 }
 
+struct SmartMontageSettings: Codable, Equatable, Sendable {
+    static let currentAnalysisVersion = 1
+
+    var analyses: [UUID: MediaQualityAnalysis]
+    var decisions: [UUID: SmartMediaDecision]
+
+    init(analyses: [UUID: MediaQualityAnalysis] = [:], decisions: [UUID: SmartMediaDecision] = [:]) {
+        self.analyses = analyses
+        self.decisions = decisions
+    }
+}
+
+struct MediaQualityAnalysis: Codable, Equatable, Sendable {
+    var overallScore: Double
+    var visualQualityScore: Double
+    var motionScore: Double
+    var faceScore: Double
+    var rangeScores: [MediaRangeScore]
+    var analysisVersion: Int
+
+    init(
+        overallScore: Double,
+        visualQualityScore: Double,
+        motionScore: Double,
+        faceScore: Double,
+        rangeScores: [MediaRangeScore],
+        analysisVersion: Int = SmartMontageSettings.currentAnalysisVersion
+    ) {
+        self.overallScore = overallScore
+        self.visualQualityScore = visualQualityScore
+        self.motionScore = motionScore
+        self.faceScore = faceScore
+        self.rangeScores = rangeScores
+        self.analysisVersion = analysisVersion
+    }
+}
+
+struct MediaRangeScore: Codable, Equatable, Sendable, Identifiable {
+    var id: UUID
+    var sourceRange: MediaTimeRange
+    var score: Double
+}
+
+enum SmartMediaDecision: String, Codable, CaseIterable, Identifiable, Sendable {
+    case included
+    case excluded
+    case pinned
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .included: "参与"
+        case .excluded: "排除"
+        case .pinned: "固定优先"
+        }
+    }
+}
+
 struct CanvasSettings: Codable, Equatable, Sendable {
     var width: Int
     var height: Int
+    /// Nil represents projects written before canvas presets were introduced.
+    var preset: CanvasPreset? = nil
 
-    static let hdLandscape = CanvasSettings(width: 1_920, height: 1_080)
+    static let hdLandscape = CanvasSettings(width: 1_920, height: 1_080, preset: .landscape16x9)
 
     var displayName: String {
         "\(width) × \(height)"
+    }
+}
+
+enum CanvasPreset: String, Codable, CaseIterable, Identifiable, Sendable {
+    case landscape16x9
+    case portrait9x16
+    case square1x1
+    case portrait4x5
+    case source
+    case custom
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .landscape16x9: "16:9 横向"
+        case .portrait9x16: "9:16 竖向"
+        case .square1x1: "1:1 方形"
+        case .portrait4x5: "4:5 竖向"
+        case .source: "源素材比例"
+        case .custom: "自定义"
+        }
+    }
+
+    func canvas(sourceSize: VideoMetadata? = nil) -> CanvasSettings? {
+        switch self {
+        case .landscape16x9:
+            return CanvasSettings(width: 1_920, height: 1_080, preset: self)
+        case .portrait9x16:
+            return CanvasSettings(width: 1_080, height: 1_920, preset: self)
+        case .square1x1:
+            return CanvasSettings(width: 1_080, height: 1_080, preset: self)
+        case .portrait4x5:
+            return CanvasSettings(width: 1_080, height: 1_350, preset: self)
+        case .source:
+            guard let sourceSize, sourceSize.width > 0, sourceSize.height > 0 else { return nil }
+            return CanvasSettings(width: sourceSize.width, height: sourceSize.height, preset: self)
+        case .custom:
+            return nil
+        }
     }
 }
 
@@ -70,6 +175,8 @@ struct MediaReference: Codable, Equatable, Identifiable, Sendable {
     var kind: MediaKind
     var duration: TimelineTime
     var videoMetadata: VideoMetadata?
+    /// Proxy data lives in the regenerable project cache; originals remain export sources.
+    var proxy: ProxyMediaInfo? = nil
 
     init(
         id: UUID = UUID(),
@@ -78,7 +185,8 @@ struct MediaReference: Codable, Equatable, Identifiable, Sendable {
         securityScopedBookmark: Data? = nil,
         kind: MediaKind,
         duration: TimelineTime,
-        videoMetadata: VideoMetadata? = nil
+        videoMetadata: VideoMetadata? = nil,
+        proxy: ProxyMediaInfo? = nil
     ) {
         self.id = id
         self.displayName = displayName
@@ -87,6 +195,37 @@ struct MediaReference: Codable, Equatable, Identifiable, Sendable {
         self.kind = kind
         self.duration = duration
         self.videoMetadata = videoMetadata
+        self.proxy = proxy
+    }
+}
+
+struct ProxyMediaInfo: Codable, Equatable, Sendable {
+    var cacheFilename: String
+    var width: Int
+    var height: Int
+    var codec: ExportCodec
+}
+
+struct EditorKeyboardShortcuts: Codable, Equatable, Sendable {
+    var undoKey: String
+    var redoKey: String
+    var splitKey: String
+
+    static let `default` = EditorKeyboardShortcuts(undoKey: "z", redoKey: "y", splitKey: "s")
+
+    func validated() -> EditorKeyboardShortcuts {
+        EditorKeyboardShortcuts(
+            undoKey: Self.normalized(undoKey, fallback: "z"),
+            redoKey: Self.normalized(redoKey, fallback: "y"),
+            splitKey: Self.normalized(splitKey, fallback: "s")
+        )
+    }
+
+    private static func normalized(_ key: String, fallback: String) -> String {
+        guard let character = key.lowercased().first, character.isLetter || character.isNumber else {
+            return fallback
+        }
+        return String(character)
     }
 }
 
@@ -106,6 +245,8 @@ struct Timeline: Codable, Equatable, Sendable {
     var audioTracks: [AudioTrack]
     var musicTrack: MusicTrack?
     var markers: [ProjectMarker]
+    /// Applies to every audio source at export. Nil is the legacy value of 1.
+    var masterVolume: Double? = nil
 }
 
 struct VideoTrack: Codable, Equatable, Identifiable, Sendable {
@@ -139,6 +280,8 @@ struct TimelineClip: Codable, Equatable, Identifiable, Sendable {
     var volume: Double
     var transitionIn: Transition
     var transitionOut: Transition
+    /// Optional so documents created by the MVP keep decoding without migration.
+    var appearance: ClipAppearance? = nil
 }
 
 struct AudioClip: Codable, Equatable, Identifiable, Sendable {
@@ -147,6 +290,8 @@ struct AudioClip: Codable, Equatable, Identifiable, Sendable {
     var sourceRange: MediaTimeRange
     var timelineStart: TimelineTime
     var volume: Double
+    /// Nil is compatible with older documents and means the clip is audible.
+    var isMuted: Bool? = nil
 }
 
 struct MusicTrack: Codable, Equatable, Sendable {
@@ -164,6 +309,82 @@ struct ClipTransform: Codable, Equatable, Sendable {
     var rotationDegrees: Double
 
     static let identity = ClipTransform(scale: 1, positionX: 0, positionY: 0, rotationDegrees: 0)
+}
+
+struct ClipAppearance: Codable, Equatable, Sendable {
+    var crop: ClipCrop
+    var contentMode: ClipContentMode
+    var color: ClipColorAdjustments
+    var lut: LUTReference?
+
+    static let `default` = ClipAppearance(
+        crop: .fullFrame,
+        contentMode: .fit,
+        color: .neutral,
+        lut: nil
+    )
+}
+
+struct ClipCrop: Codable, Equatable, Sendable {
+    /// Normalized source-space rectangle. Every value is constrained before export.
+    var x: Double
+    var y: Double
+    var width: Double
+    var height: Double
+
+    static let fullFrame = ClipCrop(x: 0, y: 0, width: 1, height: 1)
+
+    func clamped() -> ClipCrop {
+        let normalizedX = min(1, max(0, x))
+        let normalizedY = min(1, max(0, y))
+        return ClipCrop(
+            x: normalizedX,
+            y: normalizedY,
+            width: min(1 - normalizedX, max(0.05, width)),
+            height: min(1 - normalizedY, max(0.05, height))
+        )
+    }
+}
+
+enum ClipContentMode: String, Codable, CaseIterable, Identifiable, Sendable {
+    case fit
+    case fill
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .fit: "适应"
+        case .fill: "填充"
+        }
+    }
+}
+
+struct ClipColorAdjustments: Codable, Equatable, Sendable {
+    var exposure: Double
+    var contrast: Double
+    var saturation: Double
+    var temperature: Double
+    var tint: Double
+    var highlights: Double
+    var shadows: Double
+
+    static let neutral = ClipColorAdjustments(
+        exposure: 0,
+        contrast: 1,
+        saturation: 1,
+        temperature: 0,
+        tint: 0,
+        highlights: 0,
+        shadows: 0
+    )
+}
+
+struct LUTReference: Codable, Equatable, Sendable {
+    var displayName: String
+    var fileURL: URL
+    var intensity: Double
+    var securityScopedBookmark: Data? = nil
 }
 
 enum Transition: String, Codable, Sendable {

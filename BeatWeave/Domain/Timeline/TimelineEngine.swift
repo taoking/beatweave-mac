@@ -10,6 +10,16 @@ extension TimelineClip {
     }
 }
 
+extension AudioClip {
+    var timelineDuration: TimelineTime {
+        sourceRange.duration
+    }
+
+    var timelineEnd: TimelineTime {
+        TimelineTime(seconds: timelineStart.seconds + timelineDuration.seconds)
+    }
+}
+
 enum TimelineSnapTarget: String, Equatable, Sendable {
     case playhead
     case beat
@@ -123,6 +133,29 @@ enum TimelineEngine {
         return (updated, snap)
     }
 
+    static func insertAudio(
+        media: MediaReference,
+        at time: TimelineTime,
+        intoAudioTrack trackID: UUID,
+        in timeline: Timeline
+    ) -> Timeline? {
+        guard media.kind == .audio,
+              let trackIndex = timeline.audioTracks.firstIndex(where: { $0.id == trackID })
+        else {
+            return nil
+        }
+        var updated = timeline
+        updated.audioTracks[trackIndex].clips.append(AudioClip(
+            id: UUID(),
+            mediaID: media.id,
+            sourceRange: MediaTimeRange(start: .zero, duration: media.duration),
+            timelineStart: time,
+            volume: 1
+        ))
+        updated.audioTracks[trackIndex].clips.sort { $0.timelineStart < $1.timelineStart }
+        return updated
+    }
+
     static func move(
         clipID: UUID,
         to proposedTime: TimelineTime,
@@ -230,7 +263,8 @@ enum TimelineEngine {
             opacity: clip.opacity,
             volume: clip.volume,
             transitionIn: .hardCut,
-            transitionOut: clip.transitionOut
+            transitionOut: clip.transitionOut,
+            appearance: clip.appearance
         )
         updated.videoTracks[location.trackIndex].clips[location.clipIndex] = first
         updated.videoTracks[location.trackIndex].clips.insert(second, at: location.clipIndex + 1)
@@ -365,7 +399,10 @@ enum TimelineEngine {
     ) {
         for trackIndex in timeline.audioTracks.indices {
             if let index = timeline.audioTracks[trackIndex].clips.firstIndex(where: { audioClipMatches($0, videoClip: oldVideoClip) }) {
-                timeline.audioTracks[trackIndex].clips[index] = makeAudioClip(for: newVideoClip)
+                let muted = timeline.audioTracks[trackIndex].clips[index].isMuted
+                var replacement = makeAudioClip(for: newVideoClip)
+                replacement.isMuted = muted
+                timeline.audioTracks[trackIndex].clips[index] = replacement
                 return
             }
         }

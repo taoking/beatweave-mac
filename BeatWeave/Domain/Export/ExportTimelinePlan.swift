@@ -19,6 +19,7 @@ struct ExportTimelinePlan: Equatable, Sendable {
     var videoSegments: [ExportVideoSegment]
     var audioSegments: [ExportAudioSegment]
     var musicSegment: ExportMusicSegment?
+    var masterVolume: Double
     var duration: TimelineTime
 }
 
@@ -79,6 +80,7 @@ enum ExportTimelinePlanner {
             videoSegments: videoSegments,
             audioSegments: audioSegments,
             musicSegment: musicSegment,
+            masterVolume: min(1, max(0, project.timeline.masterVolume ?? 1)),
             duration: duration
         )
     }
@@ -121,5 +123,48 @@ enum ExportResolutionPreset: String, CaseIterable, Identifiable, Sendable {
             let rhsDifference = abs(rhsSize.width - settings.width) + abs(rhsSize.height - settings.height)
             return lhsDifference < rhsDifference
         } ?? .fullHDLandscape
+    }
+}
+
+/// Delivery presets change the complete export configuration; the resolution picker
+/// remains available for intentional custom dimensions afterwards.
+enum ExportDeliveryPreset: String, CaseIterable, Identifiable, Sendable {
+    case web1080p
+    case socialVertical
+    case master4K
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .web1080p: "Web 1080p（H.264）"
+        case .socialVertical: "社媒竖屏（H.264）"
+        case .master4K: "4K 母版（HEVC）"
+        }
+    }
+
+    var settings: ExportSettings {
+        switch self {
+        case .web1080p:
+            ExportSettings(codec: .h264, width: 1_920, height: 1_080, frameRate: .fps30, quality: .high)
+        case .socialVertical:
+            ExportSettings(codec: .h264, width: 1_080, height: 1_920, frameRate: .fps30, quality: .high)
+        case .master4K:
+            ExportSettings(codec: .hevc, width: 3_840, height: 2_160, frameRate: .fps60, quality: .high)
+        }
+    }
+
+    static func closest(to settings: ExportSettings) -> ExportDeliveryPreset {
+        allCases.min { lhs, rhs in
+            difference(lhs.settings, settings) < difference(rhs.settings, settings)
+        } ?? .web1080p
+    }
+
+    private static func difference(_ lhs: ExportSettings, _ rhs: ExportSettings) -> Int {
+        abs(lhs.width - rhs.width)
+            + abs(lhs.height - rhs.height)
+            + abs(lhs.frameRate.rawValue - rhs.frameRate.rawValue) * 100
+            + (lhs.codec == rhs.codec ? 0 : 2_000)
+            + (lhs.quality == rhs.quality ? 0 : 200)
     }
 }

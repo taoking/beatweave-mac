@@ -12,11 +12,18 @@ final class AutoCutModel {
     var targetStart = 0.0
     var targetEnd = 0.0
     var plan: AutoCutPlan?
+    var usesSmartMontage = false
+    var prefersStrongBeats = false
+    var isAnalyzingMedia = false
+    var analysisErrorMessage: String?
+
+    private let qualityAnalysisService = MediaQualityAnalysisService()
 
     func preparePlan(
         media: [MediaReference],
         beatAnalysis: BeatAnalysis,
-        musicDuration: TimelineTime
+        musicDuration: TimelineTime,
+        smartMontage: SmartMontageSettings?
     ) {
         let normalizedStart = min(max(0, targetStart), musicDuration.seconds)
         let normalizedEnd = targetEnd > normalizedStart
@@ -35,9 +42,35 @@ final class AutoCutModel {
                 minimumClipDuration: TimelineTime(seconds: max(0.1, minimumDuration)),
                 maximumClipDuration: TimelineTime(seconds: max(minimumDuration, maximumDuration)),
                 preserveSourceOrder: preservesSourceOrder,
-                randomSeed: 0xBEE7_2026
+                randomSeed: 0xBEE7_2026,
+                smartMontage: usesSmartMontage ? smartMontage : nil,
+                prefersStrongBeats: prefersStrongBeats
             )
         )
+    }
+
+    func analyzeSelectedMedia(
+        media: [MediaReference],
+        smartMontage: SmartMontageSettings?
+    ) async -> SmartMontageSettings? {
+        let selected = media.filter { selectedMediaIDs.contains($0.id) && $0.kind == .video }
+        guard !selected.isEmpty else { return smartMontage }
+        isAnalyzingMedia = true
+        analysisErrorMessage = nil
+        defer { isAnalyzingMedia = false }
+        var settings = smartMontage ?? SmartMontageSettings()
+        var failures: [String] = []
+        for item in selected {
+            do {
+                settings.analyses[item.id] = try await qualityAnalysisService.analyze(item)
+            } catch {
+                failures.append(item.displayName)
+            }
+        }
+        if !failures.isEmpty {
+            analysisErrorMessage = "无法分析：\(failures.joined(separator: "、"))"
+        }
+        return settings
     }
 
     func clearPlan() {
