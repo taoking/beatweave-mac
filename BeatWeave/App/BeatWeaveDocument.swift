@@ -5,17 +5,21 @@ struct BeatWeaveDocument: FileDocument {
     static let readableContentTypes: [UTType] = [.beatWeaveProject]
 
     var project: ProjectFile
+    var waveformCaches: [UUID: WaveformCache]
 
     init() {
         project = .new()
+        waveformCaches = [:]
     }
 
     init(configuration: ReadConfiguration) throws {
-        project = try ProjectPackage.readProject(from: configuration.file)
+        let contents = try ProjectPackage.readContents(from: configuration.file)
+        project = contents.project
+        waveformCaches = contents.waveformCaches
     }
 
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
-        try ProjectPackage.makeFileWrapper(for: project)
+        try ProjectPackage.makeFileWrapper(for: project, waveformCaches: waveformCaches)
     }
 }
 

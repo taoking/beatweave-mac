@@ -11,6 +11,19 @@ final class PlaybackService {
 
     var currentMediaID: UUID?
     var errorMessage: String?
+    var currentTimeSeconds = 0.0
+    private var timeObserver: Any?
+
+    init() {
+        timeObserver = player.addPeriodicTimeObserver(
+            forInterval: CMTime(seconds: 1.0 / 30.0, preferredTimescale: 600),
+            queue: .main
+        ) { [weak self] time in
+            Task { @MainActor [weak self] in
+                self?.currentTimeSeconds = max(0, time.seconds)
+            }
+        }
+    }
 
     func preview(_ media: MediaReference?) {
         guard let media else {
@@ -26,6 +39,7 @@ final class PlaybackService {
                     scopedURL = url
                 }
                 player.replaceCurrentItem(with: AVPlayerItem(url: url))
+                currentTimeSeconds = 0
                 currentMediaID = media.id
                 errorMessage = nil
             } catch {
@@ -48,6 +62,7 @@ final class PlaybackService {
         player.pause()
         player.replaceCurrentItem(with: nil)
         currentMediaID = nil
+        currentTimeSeconds = 0
         releaseSecurityScope()
     }
 

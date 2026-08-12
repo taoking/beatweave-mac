@@ -8,6 +8,7 @@ struct MediaBrowserView: View {
     @Binding var selectedMediaID: UUID?
     @Bindable var model: MediaBrowserModel
     let onProjectMutation: () -> Void
+    let onSetMusic: (MediaReference) -> Void
 
     @State private var isImporting = false
     @State private var relinkingMediaID: UUID?
@@ -25,6 +26,11 @@ struct MediaBrowserView: View {
                     .contextMenu {
                         Button("在访达中显示") {
                             model.revealInFinder(media)
+                        }
+                        if media.kind == .audio {
+                            Button("设为音乐轨道") {
+                                onSetMusic(media)
+                            }
                         }
                         if model.sourceStatus(for: media) == .missing {
                             Button("重新链接…") {

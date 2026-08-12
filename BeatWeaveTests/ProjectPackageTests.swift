@@ -23,6 +23,27 @@ final class ProjectPackageTests: XCTestCase {
         XCTAssertEqual(restored, project)
     }
 
+    func testPackageRoundTripRestoresWaveformCaches() throws {
+        let timestamp = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-08-13T00:00:00Z"))
+        let project = ProjectFile.new(name: "带波形缓存", now: timestamp)
+        let mediaID = UUID()
+        let cache = WaveformCache(
+            formatVersion: WaveformCache.currentFormatVersion,
+            mediaID: mediaID,
+            duration: TimelineTime(seconds: 2),
+            levels: [WaveformLevel(bucketCount: 2, samples: [
+                WaveformSample(peak: 0.5, rms: 0.25),
+                WaveformSample(peak: 0.75, rms: 0.5)
+            ])]
+        )
+
+        let package = try ProjectPackage.makeFileWrapper(for: project, waveformCaches: [mediaID: cache])
+        let contents = try ProjectPackage.readContents(from: package)
+
+        XCTAssertEqual(contents.project, project)
+        XCTAssertEqual(contents.waveformCaches, [mediaID: cache])
+    }
+
     func testPackageWritesAndReadsFromDisk() throws {
         let temporaryDirectory = FileManager.default.temporaryDirectory
             .appending(path: "BeatWeaveTests-\(UUID().uuidString)", directoryHint: .isDirectory)

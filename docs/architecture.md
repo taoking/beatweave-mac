@@ -26,8 +26,8 @@ project.json       MediaImportService / ThumbnailService / PlaybackService
 
 ## 并发与扩展边界
 
-`MediaImportService`、`MediaSourceResolver` 与 `ThumbnailService` 是 actor，因而不会在 SwiftUI 主路径解析媒体或生成图像。`PlaybackService` 则是 MainActor 隔离的 AVPlayer 所有者，只管理播放界面状态。缩略图故障被记录在 `ThumbnailStore`，但不会阻断媒体的导入和预览。SwiftUI view 只发起意图并渲染状态；`AVMutableComposition` 将由规范化的时间线模型生成，不能反向充当持久化模型。
+`MediaImportService`、`MediaSourceResolver`、`ThumbnailService` 与 `WaveformService` 是 actor，因而不会在 SwiftUI 主路径解析媒体或生成图像。`WaveformService` 使用 `AVAssetReader` 以单声道 Float PCM 生成 512、2,048 和 8,192 桶的峰值/RMS 缓存。`PlaybackService` 则是 MainActor 隔离的 AVPlayer 所有者，只管理播放界面状态。缩略图故障被记录在 `ThumbnailStore`，但不会阻断媒体的导入和预览。SwiftUI view 只发起意图并渲染状态；`AVMutableComposition` 将由规范化的时间线模型生成，不能反向充当持久化模型。
 
 ## 当前限制
 
-当前媒体阶段使用内存缩略图；项目包中的缓存目录仍可安全重建。波形、节拍分析、时间线和渲染服务会在对应阶段以可测试实现加入，而不是提前放入未调用的占位代码。
+当前媒体阶段使用内存缩略图；波形缓存存放在项目包的 `waveforms/` 目录、读取错误只会记录并跳过该缓存，绝不会阻止项目打开。节拍分析、时间线和渲染服务会在对应阶段以可测试实现加入，而不是提前放入未调用的占位代码。
