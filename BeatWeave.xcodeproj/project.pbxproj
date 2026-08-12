@@ -1,0 +1,459 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1164A1DBF1346EFDAD29A93B /* ProjectModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = F463380033C18FA887156F2C /* ProjectModels.swift */; };
+		22B595953AF65F4E32D52471 /* BeatWeaveDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8B8D5685331B312A3513527 /* BeatWeaveDocument.swift */; };
+		33996DD5851A852DEC764F74 /* ProjectCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63B1E6FEE8009F8DF5FDCBCC /* ProjectCodec.swift */; };
+		38DDF5A4392D7D743B7D9E3E /* ProjectEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92AF823696F7F7B5463406E2 /* ProjectEditorView.swift */; };
+		AAC90F41EF41ECE6E47E0AE6 /* ProjectPackage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE6F42D282161B2AD8D42EB1 /* ProjectPackage.swift */; };
+		BDB36E0C49B44E2E457FD794 /* BeatWeaveApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611BD4A23FCFA669B3884C17 /* BeatWeaveApp.swift */; };
+		C70AC17A8D22D9167F3C0C7C /* ProjectPackageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A1B718D92E1C814C77DA2FF /* ProjectPackageTests.swift */; };
+		E4F2C8C3FE297666CEC9E28B /* ProjectCodecTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D3330DEEF59DA038A08E208 /* ProjectCodecTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		59134E72BAC58EFDAF1C23F5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 04ED86217EFEFF0C22CA32BE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 34CB2521E754B6947DB429DB;
+			remoteInfo = BeatWeave;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		4A1B718D92E1C814C77DA2FF /* ProjectPackageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectPackageTests.swift; sourceTree = "<group>"; };
+		4F49792D503BE8618B6F3248 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		611BD4A23FCFA669B3884C17 /* BeatWeaveApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeatWeaveApp.swift; sourceTree = "<group>"; };
+		63B1E6FEE8009F8DF5FDCBCC /* ProjectCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectCodec.swift; sourceTree = "<group>"; };
+		7E9C68A9F4A18FCD1DC79E6B /* BeatWeave.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BeatWeave.entitlements; sourceTree = "<group>"; };
+		8D3330DEEF59DA038A08E208 /* ProjectCodecTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectCodecTests.swift; sourceTree = "<group>"; };
+		92AF823696F7F7B5463406E2 /* ProjectEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectEditorView.swift; sourceTree = "<group>"; };
+		BE6F42D282161B2AD8D42EB1 /* ProjectPackage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectPackage.swift; sourceTree = "<group>"; };
+		C8B8D5685331B312A3513527 /* BeatWeaveDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeatWeaveDocument.swift; sourceTree = "<group>"; };
+		EEF04B90B7D657F945659CE7 /* BeatWeaveTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BeatWeaveTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F463380033C18FA887156F2C /* ProjectModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectModels.swift; sourceTree = "<group>"; };
+		F48592CBDEA91F4598F3737A /* BeatWeave.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BeatWeave.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		0F4F56EEC00B0B6CAC990D13 /* BeatWeave */ = {
+			isa = PBXGroup;
+			children = (
+				B162E108C0DA56E9811B2582 /* App */,
+				D7BC0241729BF23678DB0D7E /* Domain */,
+				48D3FF9FB1AA2F9089CD538F /* Features */,
+			);
+			path = BeatWeave;
+			sourceTree = "<group>";
+		};
+		25370A447E4D8E2341F64E2E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F48592CBDEA91F4598F3737A /* BeatWeave.app */,
+				EEF04B90B7D657F945659CE7 /* BeatWeaveTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		2B4950D6DC0697E5E9D8AE08 /* ProjectEditor */ = {
+			isa = PBXGroup;
+			children = (
+				92AF823696F7F7B5463406E2 /* ProjectEditorView.swift */,
+			);
+			path = ProjectEditor;
+			sourceTree = "<group>";
+		};
+		48D3FF9FB1AA2F9089CD538F /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				2B4950D6DC0697E5E9D8AE08 /* ProjectEditor */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		83F30A5E99143E404D215B35 = {
+			isa = PBXGroup;
+			children = (
+				0F4F56EEC00B0B6CAC990D13 /* BeatWeave */,
+				D3CB2CBB09BA931A313AE033 /* BeatWeaveTests */,
+				25370A447E4D8E2341F64E2E /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		9F8666B565AA9B2B599EAADB /* Project */ = {
+			isa = PBXGroup;
+			children = (
+				63B1E6FEE8009F8DF5FDCBCC /* ProjectCodec.swift */,
+				F463380033C18FA887156F2C /* ProjectModels.swift */,
+				BE6F42D282161B2AD8D42EB1 /* ProjectPackage.swift */,
+			);
+			path = Project;
+			sourceTree = "<group>";
+		};
+		B162E108C0DA56E9811B2582 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				7E9C68A9F4A18FCD1DC79E6B /* BeatWeave.entitlements */,
+				611BD4A23FCFA669B3884C17 /* BeatWeaveApp.swift */,
+				C8B8D5685331B312A3513527 /* BeatWeaveDocument.swift */,
+				4F49792D503BE8618B6F3248 /* Info.plist */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		D3CB2CBB09BA931A313AE033 /* BeatWeaveTests */ = {
+			isa = PBXGroup;
+			children = (
+				8D3330DEEF59DA038A08E208 /* ProjectCodecTests.swift */,
+				4A1B718D92E1C814C77DA2FF /* ProjectPackageTests.swift */,
+			);
+			path = BeatWeaveTests;
+			sourceTree = "<group>";
+		};
+		D7BC0241729BF23678DB0D7E /* Domain */ = {
+			isa = PBXGroup;
+			children = (
+				9F8666B565AA9B2B599EAADB /* Project */,
+			);
+			path = Domain;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		34CB2521E754B6947DB429DB /* BeatWeave */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C0570143EA65E88B37C7B2C6 /* Build configuration list for PBXNativeTarget "BeatWeave" */;
+			buildPhases = (
+				EDECC85E183000E44ABDAD58 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BeatWeave;
+			packageProductDependencies = (
+			);
+			productName = BeatWeave;
+			productReference = F48592CBDEA91F4598F3737A /* BeatWeave.app */;
+			productType = "com.apple.product-type.application";
+		};
+		E0C0E50307C18C442C99C867 /* BeatWeaveTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 55125D9BD97A94F5E532F6E7 /* Build configuration list for PBXNativeTarget "BeatWeaveTests" */;
+			buildPhases = (
+				64AE83957D4606E8878ED743 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8323839DA8D95882C74A777B /* PBXTargetDependency */,
+			);
+			name = BeatWeaveTests;
+			packageProductDependencies = (
+			);
+			productName = BeatWeaveTests;
+			productReference = EEF04B90B7D657F945659CE7 /* BeatWeaveTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		04ED86217EFEFF0C22CA32BE /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 382EDF1B04B16A84A6C2AAFB /* Build configuration list for PBXProject "BeatWeave" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 83F30A5E99143E404D215B35;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 25370A447E4D8E2341F64E2E /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				34CB2521E754B6947DB429DB /* BeatWeave */,
+				E0C0E50307C18C442C99C867 /* BeatWeaveTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		64AE83957D4606E8878ED743 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E4F2C8C3FE297666CEC9E28B /* ProjectCodecTests.swift in Sources */,
+				C70AC17A8D22D9167F3C0C7C /* ProjectPackageTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EDECC85E183000E44ABDAD58 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BDB36E0C49B44E2E457FD794 /* BeatWeaveApp.swift in Sources */,
+				22B595953AF65F4E32D52471 /* BeatWeaveDocument.swift in Sources */,
+				33996DD5851A852DEC764F74 /* ProjectCodec.swift in Sources */,
+				38DDF5A4392D7D743B7D9E3E /* ProjectEditorView.swift in Sources */,
+				1164A1DBF1346EFDAD29A93B /* ProjectModels.swift in Sources */,
+				AAC90F41EF41ECE6E47E0AE6 /* ProjectPackage.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		8323839DA8D95882C74A777B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 34CB2521E754B6947DB429DB /* BeatWeave */;
+			targetProxy = 59134E72BAC58EFDAF1C23F5 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		10963CD3DDD313DCA8B90C7B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.taoking.BeatWeaveTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BeatWeave.app/Contents/MacOS/BeatWeave";
+			};
+			name = Release;
+		};
+		1EFC81AC7092A856971DFA42 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		2C469DD9462791103FFF8DC5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = BeatWeave/App/BeatWeave.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = BeatWeave/App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.taoking.BeatWeave;
+				PRODUCT_NAME = BeatWeave;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		658F6DAC40397AEF0AF2C4AA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.taoking.BeatWeaveTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BeatWeave.app/Contents/MacOS/BeatWeave";
+			};
+			name = Debug;
+		};
+		A0091E40F5FB817ED91F9C94 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		D140F0060CEC9179BE67AD8B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = BeatWeave/App/BeatWeave.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = BeatWeave/App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.taoking.BeatWeave;
+				PRODUCT_NAME = BeatWeave;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		382EDF1B04B16A84A6C2AAFB /* Build configuration list for PBXProject "BeatWeave" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A0091E40F5FB817ED91F9C94 /* Debug */,
+				1EFC81AC7092A856971DFA42 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		55125D9BD97A94F5E532F6E7 /* Build configuration list for PBXNativeTarget "BeatWeaveTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				658F6DAC40397AEF0AF2C4AA /* Debug */,
+				10963CD3DDD313DCA8B90C7B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C0570143EA65E88B37C7B2C6 /* Build configuration list for PBXNativeTarget "BeatWeave" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2C469DD9462791103FFF8DC5 /* Debug */,
+				D140F0060CEC9179BE67AD8B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 04ED86217EFEFF0C22CA32BE /* Project object */;
+}
