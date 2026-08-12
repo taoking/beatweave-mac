@@ -7,8 +7,8 @@
 | Phase 0 — Repository and foundation | 已完成 | 原生 macOS 文档应用、版本化 `.beatweave` 包、基础测试、CI 与文档 |
 | Phase 1 — Media import and viewer | 已完成 | 媒体导入、元数据、缩略图、预览、缺失媒体重连 |
 | Phase 2 — Music + waveform | 已完成 | 音乐轨道、PCM、多层波形缓存、波形视图与播放头同步 |
-| Phase 3 — Beat detection | 进行中 | 本地节拍分析 |
-| Phase 4 — Real timeline editor | 未开始 | 可编辑时间线与撤销 |
+| Phase 3 — Beat detection | 已完成 | 本地节拍分析、BPM、网格与手动校正 |
+| Phase 4 — Real timeline editor | 进行中 | 可编辑时间线与撤销 |
 | Phase 5 — AutoCut MVP | 未开始 | 节拍同步自动剪辑 |
 | Phase 6 — Export | 未开始 | 本地视频导出 |
 
@@ -33,3 +33,9 @@
 - `ProjectPackageTests` 验证波形缓存保存在 `.beatweave/waveforms/` 中，并随项目包读取恢复。
 - `xcodebuild test` 共执行 15 项测试，0 失败；已手工检查空项目会显示 M1 波形区域、缩放控件及“选择音乐轨道”提示。
 - 未验证：长音频文件的滚动性能和保存后经 GUI 重新打开的波形显示仍需以授权的真实音乐素材进行手工验收。
+
+## Phase 3 验证（2026-08-13）
+
+- `BeatAnalysisDSPTests` 覆盖起音峰值选择、120 BPM 估计、稳定网格、手动 BPM 与 Tap Tempo；`BeatAnalysisServiceTests` 用 8 秒、120 BPM 合成点击 WAV 验证完整 AVAssetReader/vDSP 管线。
+- `ProjectPackageTests` 验证 BPM、起音和节拍标记经项目包重开后完全一致；`ProjectCodecTests` 验证旧版 `BeatAnalysis` 缺少新增字段时仍以安全默认值读取。
+- 未验证：EDM、流行、摇滚、嘻哈、影视/原声、原声乐器、前导静音与半/双拍歧义等真实音乐集的算法效果，以及真实素材上节拍叠加控件的 GUI 操作，仍需授权测试素材人工验收。

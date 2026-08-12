@@ -69,4 +69,23 @@ final class ProjectCodecTests: XCTestCase {
 
         XCTAssertThrowsError(try JSONDecoder().decode(TimelineTime.self, from: data))
     }
+
+    func testLegacyBeatAnalysisDecodesWithoutNewCacheFields() throws {
+        let data = Data("""
+        {
+          "bpm": 120,
+          "confidence": 0.7,
+          "beatTimes": [{"value": 300, "timescale": 600}],
+          "strongBeatTimes": [{"value": 300, "timescale": 600}],
+          "downbeatTimes": [{"value": 300, "timescale": 600}],
+          "analysisVersion": 1
+        }
+        """.utf8)
+
+        let analysis = try JSONDecoder().decode(BeatAnalysis.self, from: data)
+
+        XCTAssertNil(analysis.mediaID)
+        XCTAssertTrue(analysis.onsets.isEmpty)
+        XCTAssertTrue(analysis.alternateBPMs.isEmpty)
+    }
 }

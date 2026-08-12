@@ -219,12 +219,105 @@ struct TimelineTime: Codable, Equatable, Comparable, Hashable, Sendable {
 }
 
 struct BeatAnalysis: Codable, Equatable, Sendable {
+    static let currentAnalysisVersion = 1
+
+    var mediaID: UUID?
     var bpm: Double
     var confidence: Double
+    var alternateBPMs: [Double]
+    var onsets: [Onset]
     var beatTimes: [TimelineTime]
     var strongBeatTimes: [TimelineTime]
     var downbeatTimes: [TimelineTime]
     var analysisVersion: Int
+    var parameters: BeatAnalysisParameters?
+    var diagnostics: BeatAnalysisDiagnostics?
+
+    init(
+        mediaID: UUID? = nil,
+        bpm: Double,
+        confidence: Double,
+        alternateBPMs: [Double] = [],
+        onsets: [Onset] = [],
+        beatTimes: [TimelineTime],
+        strongBeatTimes: [TimelineTime],
+        downbeatTimes: [TimelineTime],
+        analysisVersion: Int = currentAnalysisVersion,
+        parameters: BeatAnalysisParameters? = nil,
+        diagnostics: BeatAnalysisDiagnostics? = nil
+    ) {
+        self.mediaID = mediaID
+        self.bpm = bpm
+        self.confidence = confidence
+        self.alternateBPMs = alternateBPMs
+        self.onsets = onsets
+        self.beatTimes = beatTimes
+        self.strongBeatTimes = strongBeatTimes
+        self.downbeatTimes = downbeatTimes
+        self.analysisVersion = analysisVersion
+        self.parameters = parameters
+        self.diagnostics = diagnostics
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case mediaID, bpm, confidence, alternateBPMs, onsets, beatTimes, strongBeatTimes
+        case downbeatTimes, analysisVersion, parameters, diagnostics
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        mediaID = try container.decodeIfPresent(UUID.self, forKey: .mediaID)
+        bpm = try container.decode(Double.self, forKey: .bpm)
+        confidence = try container.decode(Double.self, forKey: .confidence)
+        alternateBPMs = try container.decodeIfPresent([Double].self, forKey: .alternateBPMs) ?? []
+        onsets = try container.decodeIfPresent([Onset].self, forKey: .onsets) ?? []
+        beatTimes = try container.decode([TimelineTime].self, forKey: .beatTimes)
+        strongBeatTimes = try container.decode([TimelineTime].self, forKey: .strongBeatTimes)
+        downbeatTimes = try container.decode([TimelineTime].self, forKey: .downbeatTimes)
+        analysisVersion = try container.decodeIfPresent(Int.self, forKey: .analysisVersion) ?? 1
+        parameters = try container.decodeIfPresent(BeatAnalysisParameters.self, forKey: .parameters)
+        diagnostics = try container.decodeIfPresent(BeatAnalysisDiagnostics.self, forKey: .diagnostics)
+    }
+}
+
+struct Onset: Codable, Equatable, Identifiable, Sendable {
+    var id: UUID
+    var time: TimelineTime
+    var strength: Double
+
+    init(id: UUID = UUID(), time: TimelineTime, strength: Double) {
+        self.id = id
+        self.time = time
+        self.strength = strength
+    }
+}
+
+struct BeatAnalysisParameters: Codable, Equatable, Sendable {
+    static let `default` = BeatAnalysisParameters(
+        sampleRate: 44_100,
+        windowSize: 1_024,
+        hopSize: 512,
+        minimumBPM: 60,
+        maximumBPM: 200
+    )
+
+    var sampleRate: Double
+    var windowSize: Int
+    var hopSize: Int
+    var minimumBPM: Double
+    var maximumBPM: Double
+}
+
+struct BeatAnalysisDiagnostics: Codable, Equatable, Sendable {
+    var duration: TimelineTime
+    var sampleRate: Double
+    var parameters: BeatAnalysisParameters
+    var detectedBPM: Double
+    var alternateBPMs: [Double]
+    var confidence: Double
+    var onsetCount: Int
+    var beatCount: Int
+    var executionMilliseconds: Int
 }
 
 struct ExportSettings: Codable, Equatable, Sendable {

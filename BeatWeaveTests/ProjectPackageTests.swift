@@ -44,6 +44,40 @@ final class ProjectPackageTests: XCTestCase {
         XCTAssertEqual(contents.waveformCaches, [mediaID: cache])
     }
 
+    func testPackageRoundTripPreservesBeatMarkers() throws {
+        let timestamp = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-08-13T00:00:00Z"))
+        var project = ProjectFile.new(name: "节拍持久化", now: timestamp)
+        let mediaID = UUID(uuidString: "96F27813-450D-4548-88C2-62D36CBF3A9C") ?? UUID()
+        let onsetID = UUID(uuidString: "2E7B1B02-4E7C-42E8-8178-7607FAFF7B9D") ?? UUID()
+        project.beatAnalysis = BeatAnalysis(
+            mediaID: mediaID,
+            bpm: 120,
+            confidence: 0.8,
+            alternateBPMs: [60],
+            onsets: [Onset(id: onsetID, time: TimelineTime(seconds: 0.5), strength: 1)],
+            beatTimes: [TimelineTime(seconds: 0.5), TimelineTime(seconds: 1)],
+            strongBeatTimes: [TimelineTime(seconds: 0.5)],
+            downbeatTimes: [TimelineTime(seconds: 0.5)],
+            parameters: .default,
+            diagnostics: BeatAnalysisDiagnostics(
+                duration: TimelineTime(seconds: 2),
+                sampleRate: 44_100,
+                parameters: .default,
+                detectedBPM: 120,
+                alternateBPMs: [60],
+                confidence: 0.8,
+                onsetCount: 1,
+                beatCount: 2,
+                executionMilliseconds: 15
+            )
+        )
+
+        let package = try ProjectPackage.makeFileWrapper(for: project)
+        let restored = try ProjectPackage.readProject(from: package)
+
+        XCTAssertEqual(restored.beatAnalysis, project.beatAnalysis)
+    }
+
     func testPackageWritesAndReadsFromDisk() throws {
         let temporaryDirectory = FileManager.default.temporaryDirectory
             .appending(path: "BeatWeaveTests-\(UUID().uuidString)", directoryHint: .isDirectory)
