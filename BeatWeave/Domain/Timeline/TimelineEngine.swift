@@ -266,6 +266,32 @@ enum TimelineEngine {
         return updated
     }
 
+    static func applying(
+        _ plan: AutoCutPlan,
+        to timeline: Timeline
+    ) -> Timeline {
+        var updated = timeline
+        let videoClips = plan.placements.map { placement in
+            TimelineClip(
+                id: UUID(),
+                mediaID: placement.mediaID,
+                sourceRange: placement.sourceRange,
+                timelineStart: placement.timelineStart,
+                playbackRate: 1,
+                transform: .identity,
+                opacity: 1,
+                volume: 1,
+                transitionIn: .hardCut,
+                transitionOut: .hardCut
+            )
+        }
+        updated.videoTracks = videoClips.isEmpty ? [] : [VideoTrack(clips: videoClips)]
+        updated.audioTracks = videoClips.isEmpty ? [] : [
+            AudioTrack(clips: videoClips.map(makeAudioClip(for:)))
+        ]
+        return updated
+    }
+
     static func snappedTime(
         _ proposedTime: TimelineTime,
         in timeline: Timeline,

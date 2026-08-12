@@ -8,6 +8,7 @@ struct ProjectEditorView: View {
     @State private var waveform = WaveformModel()
     @State private var beatAnalysis = BeatAnalysisModel()
     @State private var timeline = TimelineEditorModel()
+    @State private var autoCut = AutoCutModel()
 
     init(document: Binding<BeatWeaveDocument>) {
         _document = document
@@ -23,29 +24,41 @@ struct ProjectEditorView: View {
                 onSetMusic: setMusic
             )
         } detail: {
-            VStack(spacing: 0) {
-                ViewerView(selectedMedia: selectedMedia, playback: playback)
-                WaveformTimelineView(
-                    music: musicMedia,
-                    cache: musicMedia.flatMap { document.waveformCaches[$0.id] },
+            HSplitView {
+                VStack(spacing: 0) {
+                    ViewerView(selectedMedia: selectedMedia, playback: playback)
+                    WaveformTimelineView(
+                        music: musicMedia,
+                        cache: musicMedia.flatMap { document.waveformCaches[$0.id] },
+                        beatAnalysis: musicBeatAnalysis,
+                        playheadSeconds: playback.currentTimeSeconds,
+                        isGenerating: waveform.isGenerating,
+                        isAnalyzing: beatAnalysis.isAnalyzing,
+                        onGenerate: generateWaveform,
+                        onAnalyze: analyzeBeats,
+                        onApplyManualBPM: applyManualBPM,
+                        onTapTempo: beatAnalysis.registerTap
+                    )
+                    TimelineEditorView(
+                        project: $document.project,
+                        selectedMedia: selectedMedia,
+                        beatAnalysis: musicBeatAnalysis,
+                        playheadSeconds: playback.currentTimeSeconds,
+                        model: timeline,
+                        onSeek: playback.seek,
+                        onProjectMutation: markProjectModified
+                    )
+                }
+                .frame(minWidth: 620)
+                AutoCutView(
+                    media: document.project.mediaLibrary.items,
                     beatAnalysis: musicBeatAnalysis,
-                    playheadSeconds: playback.currentTimeSeconds,
-                    isGenerating: waveform.isGenerating,
-                    isAnalyzing: beatAnalysis.isAnalyzing,
-                    onGenerate: generateWaveform,
-                    onAnalyze: analyzeBeats,
-                    onApplyManualBPM: applyManualBPM,
-                    onTapTempo: beatAnalysis.registerTap
+                    musicDuration: musicMedia?.duration,
+                    model: autoCut,
+                    onApply: applyAutoCut
                 )
-                TimelineEditorView(
-                    project: $document.project,
-                    selectedMedia: selectedMedia,
-                    beatAnalysis: musicBeatAnalysis,
-                    playheadSeconds: playback.currentTimeSeconds,
-                    model: timeline,
-                    onSeek: playback.seek,
-                    onProjectMutation: markProjectModified
-                )
+                .frame(minWidth: 240, idealWidth: 280, maxWidth: 340)
+                .padding(12)
             }
             .navigationTitle(document.project.name)
         }
@@ -169,5 +182,11 @@ struct ProjectEditorView: View {
         }
         document.project.beatAnalysis = analysis
         markProjectModified()
+    }
+
+    private func applyAutoCut(_ plan: AutoCutPlan) {
+        if timeline.applyAutoCut(plan, to: &document.project) {
+            markProjectModified()
+        }
     }
 }

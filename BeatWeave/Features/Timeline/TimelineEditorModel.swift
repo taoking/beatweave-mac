@@ -149,6 +149,14 @@ final class TimelineEditorModel {
     }
 
     @discardableResult
+    func applyAutoCut(_ plan: AutoCutPlan, to project: inout ProjectFile) -> Bool {
+        guard !plan.placements.isEmpty else { return false }
+        let timeline = TimelineEngine.applying(plan, to: project.timeline)
+        selectedClipID = nil
+        return commit(name: "应用 AutoCut", timeline: timeline, to: &project)
+    }
+
+    @discardableResult
     func undo(in project: inout ProjectFile) -> Bool {
         guard let command = undoStack.popLast() else { return false }
         command.undo(in: &project)

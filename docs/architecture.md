@@ -26,7 +26,7 @@ project.json       MediaImportService / ThumbnailService / PlaybackService
 
 ## 并发与扩展边界
 
-`MediaImportService`、`MediaSourceResolver`、`ThumbnailService`、`WaveformService` 与 `BeatAnalysisService` 是 actor，因而不会在 SwiftUI 主路径解析媒体或生成图像。`WaveformService` 使用 `AVAssetReader` 以单声道 Float PCM 生成 512、2,048 和 8,192 桶的峰值/RMS 缓存。`BeatAnalysisService` 以流式 PCM、小型待处理窗口和 vDSP FFT 生成谱通量包络，避免将整首 PCM 留在内存；随后由纯 Swift、可测试的辅助函数完成起音峰值、BPM、相位和节拍网格计算。`TimelineEngine` 是纯领域层，生成可逆的 `TimelineEditCommand` 快照；`TimelineEditorModel` 仅保留撤销/重做栈，而项目 `Timeline` 始终是唯一持久化真相。`PlaybackService` 则是 MainActor 隔离的 AVPlayer 所有者，只管理播放界面状态。缩略图故障被记录在 `ThumbnailStore`，但不会阻断媒体的导入和预览。SwiftUI view 只发起意图并渲染状态；`AVMutableComposition` 将由规范化的时间线模型生成，不能反向充当持久化模型。
+`MediaImportService`、`MediaSourceResolver`、`ThumbnailService`、`WaveformService` 与 `BeatAnalysisService` 是 actor，因而不会在 SwiftUI 主路径解析媒体或生成图像。`WaveformService` 使用 `AVAssetReader` 以单声道 Float PCM 生成 512、2,048 和 8,192 桶的峰值/RMS 缓存。`BeatAnalysisService` 以流式 PCM、小型待处理窗口和 vDSP FFT 生成谱通量包络，避免将整首 PCM 留在内存；随后由纯 Swift、可测试的辅助函数完成起音峰值、BPM、相位和节拍网格计算。`TimelineEngine` 是纯领域层，生成可逆的 `TimelineEditCommand` 快照；`TimelineEditorModel` 仅保留撤销/重做栈，而项目 `Timeline` 始终是唯一持久化真相。`AutoCutEngine` 只从用户选择、节拍网格和确定性参数生成 `AutoCutPlan`，绝不直接写项目；计划经确认后由时间线命令层作为一条事务应用。`PlaybackService` 则是 MainActor 隔离的 AVPlayer 所有者，只管理播放界面状态。缩略图故障被记录在 `ThumbnailStore`，但不会阻断媒体的导入和预览。SwiftUI view 只发起意图并渲染状态；`AVMutableComposition` 将由规范化的时间线模型生成，不能反向充当持久化模型。
 
 ## 当前限制
 
