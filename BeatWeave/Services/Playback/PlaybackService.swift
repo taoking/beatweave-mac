@@ -58,6 +58,13 @@ final class PlaybackService {
         }
     }
 
+    func seek(to seconds: Double) {
+        let clampedSeconds = max(0, seconds)
+        let target = CMTime(seconds: clampedSeconds, preferredTimescale: 600)
+        player.seek(to: target, toleranceBefore: .zero, toleranceAfter: .zero)
+        currentTimeSeconds = clampedSeconds
+    }
+
     func stop() {
         player.pause()
         player.replaceCurrentItem(with: nil)

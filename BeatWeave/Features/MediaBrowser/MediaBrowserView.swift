@@ -23,6 +23,7 @@ struct MediaBrowserView: View {
                         thumbnailData: model.thumbnails.thumbnailData(for: media)
                     )
                     .tag(media.id)
+                    .draggable("media:\(media.id.uuidString)")
                     .contextMenu {
                         Button("在访达中显示") {
                             model.revealInFinder(media)

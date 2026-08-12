@@ -7,6 +7,7 @@ struct ProjectEditorView: View {
     @State private var playback = PlaybackService()
     @State private var waveform = WaveformModel()
     @State private var beatAnalysis = BeatAnalysisModel()
+    @State private var timeline = TimelineEditorModel()
 
     init(document: Binding<BeatWeaveDocument>) {
         _document = document
@@ -35,6 +36,15 @@ struct ProjectEditorView: View {
                     onAnalyze: analyzeBeats,
                     onApplyManualBPM: applyManualBPM,
                     onTapTempo: beatAnalysis.registerTap
+                )
+                TimelineEditorView(
+                    project: $document.project,
+                    selectedMedia: selectedMedia,
+                    beatAnalysis: musicBeatAnalysis,
+                    playheadSeconds: playback.currentTimeSeconds,
+                    model: timeline,
+                    onSeek: playback.seek,
+                    onProjectMutation: markProjectModified
                 )
             }
             .navigationTitle(document.project.name)

@@ -8,8 +8,8 @@
 | Phase 1 — Media import and viewer | 已完成 | 媒体导入、元数据、缩略图、预览、缺失媒体重连 |
 | Phase 2 — Music + waveform | 已完成 | 音乐轨道、PCM、多层波形缓存、波形视图与播放头同步 |
 | Phase 3 — Beat detection | 已完成 | 本地节拍分析、BPM、网格与手动校正 |
-| Phase 4 — Real timeline editor | 进行中 | 可编辑时间线与撤销 |
-| Phase 5 — AutoCut MVP | 未开始 | 节拍同步自动剪辑 |
+| Phase 4 — Real timeline editor | 已完成 | 可编辑时间线、吸附与撤销 |
+| Phase 5 — AutoCut MVP | 进行中 | 节拍同步自动剪辑 |
 | Phase 6 — Export | 未开始 | 本地视频导出 |
 
 不在完成标记前宣称对应功能可用。每阶段完成后记录构建、测试和人工验证情况。
@@ -39,3 +39,9 @@
 - `BeatAnalysisDSPTests` 覆盖起音峰值选择、120 BPM 估计、稳定网格、手动 BPM 与 Tap Tempo；`BeatAnalysisServiceTests` 用 8 秒、120 BPM 合成点击 WAV 验证完整 AVAssetReader/vDSP 管线。
 - `ProjectPackageTests` 验证 BPM、起音和节拍标记经项目包重开后完全一致；`ProjectCodecTests` 验证旧版 `BeatAnalysis` 缺少新增字段时仍以安全默认值读取。
 - 未验证：EDM、流行、摇滚、嘻哈、影视/原声、原声乐器、前导静音与半/双拍歧义等真实音乐集的算法效果，以及真实素材上节拍叠加控件的 GUI 操作，仍需授权测试素材人工验收。
+
+## Phase 4 验证（2026-08-13）
+
+- `TimelineEngineTests` 覆盖追加与节拍吸附、插入时分割并波纹后移、移动重排、两端裁剪、分割、波纹删除、播放头优先吸附与撤销/重做快照。
+- 时间线视图支持视频/剪辑拖放、缩放、播放头点击定位、吸附开关以及上述编辑命令；所有时间线状态修改均通过命令层，可撤销/重做。
+- 未验证：使用真实视频素材拖放并完成一段手工节拍蒙太奇、时间线级预览播放以及键盘快捷键的端到端 GUI 验收，仍需授权素材人工验收。
