@@ -26,8 +26,8 @@ project.json       MediaImportService / ThumbnailService / PlaybackService
 
 ## 并发与扩展边界
 
-`MediaImportService`、`MediaSourceResolver`、`ThumbnailService`、`WaveformService` 与 `BeatAnalysisService` 是 actor，因而不会在 SwiftUI 主路径解析媒体或生成图像。`WaveformService` 使用 `AVAssetReader` 以单声道 Float PCM 生成 512、2,048 和 8,192 桶的峰值/RMS 缓存。`BeatAnalysisService` 以流式 PCM、小型待处理窗口和 vDSP FFT 生成谱通量包络，避免将整首 PCM 留在内存；随后由纯 Swift、可测试的辅助函数完成起音峰值、BPM、相位和节拍网格计算。`TimelineEngine` 是纯领域层，生成可逆的 `TimelineEditCommand` 快照；`TimelineEditorModel` 仅保留撤销/重做栈，而项目 `Timeline` 始终是唯一持久化真相。`AutoCutEngine` 只从用户选择、节拍网格和确定性参数生成 `AutoCutPlan`，绝不直接写项目；计划经确认后由时间线命令层作为一条事务应用。`PlaybackService` 则是 MainActor 隔离的 AVPlayer 所有者，只管理播放界面状态。缩略图故障被记录在 `ThumbnailStore`，但不会阻断媒体的导入和预览。SwiftUI view 只发起意图并渲染状态；`AVMutableComposition` 将由规范化的时间线模型生成，不能反向充当持久化模型。
+`MediaImportService`、`MediaSourceResolver`、`ThumbnailService`、`WaveformService`、`BeatAnalysisService` 与 `ExportService` 是 actor，因而不会在 SwiftUI 主路径解析媒体或生成图像。`WaveformService` 使用 `AVAssetReader` 以单声道 Float PCM 生成 512、2,048 和 8,192 桶的峰值/RMS 缓存。`BeatAnalysisService` 以流式 PCM、小型待处理窗口和 vDSP FFT 生成谱通量包络，避免将整首 PCM 留在内存；随后由纯 Swift、可测试的辅助函数完成起音峰值、BPM、相位和节拍网格计算。`TimelineEngine` 是纯领域层，生成可逆的 `TimelineEditCommand` 快照；`TimelineEditorModel` 仅保留撤销/重做栈，而项目 `Timeline` 始终是唯一持久化真相。`AutoCutEngine` 只从用户选择、节拍网格和确定性参数生成 `AutoCutPlan`，绝不直接写项目；计划经确认后由时间线命令层作为一条事务应用。`ExportTimelinePlanner` 将这份时间线规范化为可测试的导出时序计划；`ExportService` 在后台构建 `AVMutableComposition`、视频指令和混音，输出先写同目录临时 MP4，再原子移动到用户选定位置。`PlaybackService` 则是 MainActor 隔离的 AVPlayer 所有者，只管理播放界面状态。缩略图故障被记录在 `ThumbnailStore`，但不会阻断媒体的导入和预览。SwiftUI view 只发起意图并渲染状态；`AVMutableComposition` 将由规范化的时间线模型生成，不能反向充当持久化模型。
 
 ## 当前限制
 
-当前媒体阶段使用内存缩略图；波形缓存存放在项目包的 `waveforms/` 目录、读取错误只会记录并跳过该缓存，绝不会阻止项目打开。节拍分析作为 `ProjectFile.beatAnalysis` 的版本化可复用结果持久化，包含媒体 ID、参数、起音、BPM、网格与诊断；与音乐轨匹配时直接渲染，避免不必要的重新分析。时间线编辑同样随 `ProjectFile.timeline` 保存；撤销栈只存在于当前编辑会话。渲染服务会在对应阶段以可测试实现加入，而不是提前放入未调用的占位代码。
+当前媒体阶段使用内存缩略图；波形缓存存放在项目包的 `waveforms/` 目录、读取错误只会记录并跳过该缓存，绝不会阻止项目打开。节拍分析作为 `ProjectFile.beatAnalysis` 的版本化可复用结果持久化，包含媒体 ID、参数、起音、BPM、网格与诊断；与音乐轨匹配时直接渲染，避免不必要的重新分析。时间线编辑同样随 `ProjectFile.timeline` 保存；撤销栈只存在于当前编辑会话。导出不持久化 AVFoundation 组合对象，也不修改源媒体；取消或失败会清理仅由本次任务创建的临时文件，最终路径从不覆盖已有文件。

@@ -9,6 +9,7 @@ struct ProjectEditorView: View {
     @State private var beatAnalysis = BeatAnalysisModel()
     @State private var timeline = TimelineEditorModel()
     @State private var autoCut = AutoCutModel()
+    @State private var export = ExportModel()
 
     init(document: Binding<BeatWeaveDocument>) {
         _document = document
@@ -50,14 +51,22 @@ struct ProjectEditorView: View {
                     )
                 }
                 .frame(minWidth: 620)
-                AutoCutView(
-                    media: document.project.mediaLibrary.items,
-                    beatAnalysis: musicBeatAnalysis,
-                    musicDuration: musicMedia?.duration,
-                    model: autoCut,
-                    onApply: applyAutoCut
-                )
-                .frame(minWidth: 240, idealWidth: 280, maxWidth: 340)
+                VStack(alignment: .leading, spacing: 12) {
+                    AutoCutView(
+                        media: document.project.mediaLibrary.items,
+                        beatAnalysis: musicBeatAnalysis,
+                        musicDuration: musicMedia?.duration,
+                        model: autoCut,
+                        onApply: applyAutoCut
+                    )
+                    ExportView(
+                        project: document.project,
+                        settings: $document.project.exportSettings,
+                        model: export,
+                        onSettingsMutation: markProjectModified
+                    )
+                }
+                .frame(minWidth: 240, idealWidth: 280, maxWidth: 340, maxHeight: .infinity, alignment: .top)
                 .padding(12)
             }
             .navigationTitle(document.project.name)

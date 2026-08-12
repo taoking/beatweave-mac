@@ -336,12 +336,12 @@ struct ExportSettings: Codable, Equatable, Sendable {
     )
 }
 
-enum ExportCodec: String, Codable, Sendable {
+enum ExportCodec: String, Codable, CaseIterable, Sendable {
     case h264
     case hevc
 }
 
-enum ExportQuality: String, Codable, Sendable {
+enum ExportQuality: String, Codable, CaseIterable, Sendable {
     case medium
     case high
 }
