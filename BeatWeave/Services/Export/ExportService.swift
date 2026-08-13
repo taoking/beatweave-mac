@@ -73,6 +73,11 @@ actor ExportService {
             plan: plan,
             settings: project.exportSettings
         )
+        defer {
+            for url in composition.temporaryVideoURLs {
+                try? FileManager.default.removeItem(at: url)
+            }
+        }
         let presetName = exportPreset(for: project.exportSettings.codec, quality: project.exportSettings.quality)
         guard let session = AVAssetExportSession(asset: composition.composition, presetName: presetName) else {
             throw ExportServiceError.cannotCreateSession
@@ -152,14 +157,31 @@ actor ExportService {
     }
 }
 
-private struct BuiltComposition {
+struct BuiltComposition {
     var composition: AVMutableComposition
     var videoComposition: AVVideoComposition
     var audioMix: AVMutableAudioMix?
+    var temporaryVideoURLs: [URL]
 }
 
-private struct CompositionBuilder {
+private struct CompositionVideoLayer {
+    var segment: ExportVideoSegment
+    var compositionTrack: AVMutableCompositionTrack
+    var layerInstruction: AVVideoCompositionLayerInstruction
+
+    var timelineRange: MediaTimeRange {
+        MediaTimeRange(start: segment.clip.timelineStart, duration: segment.clip.timelineDuration)
+    }
+}
+
+private struct ClipTransitionTiming {
+    var incoming: MediaTimeRange?
+    var outgoing: MediaTimeRange?
+}
+
+struct CompositionBuilder {
     private let resolver: MediaSourceResolver
+    private let colorRenderer = ColorRenderService()
 
     init(resolver: MediaSourceResolver) {
         self.resolver = resolver
@@ -167,68 +189,78 @@ private struct CompositionBuilder {
 
     func build(plan: ExportTimelinePlan, settings: ExportSettings) async throws -> BuiltComposition {
         let composition = AVMutableComposition()
-        var instructions: [AVVideoCompositionInstructionProtocol] = []
         var audioParameters: [AVMutableAudioMixInputParameters] = []
+        var videoLayers: [CompositionVideoLayer] = []
+        var temporaryVideoURLs: [URL] = []
         let renderSize = CGSize(width: settings.width, height: settings.height)
+        let transitionTimings = transitionTimings(for: plan.videoSegments)
 
-        for segment in plan.videoSegments {
-            let url = try await resolver.resolvedURL(for: segment.media)
-            let asset = AVURLAsset(url: url)
-            let tracks = try await asset.load(.tracks)
-            guard let sourceTrack = tracks.first(where: { $0.mediaType == .video }),
-                  let compositionTrack = composition.addMutableTrack(
-                      withMediaType: .video,
-                      preferredTrackID: kCMPersistentTrackID_Invalid
-                  )
-            else {
-                throw MediaSourceResolverError.unavailable(segment.media)
-            }
-            let sourceRange = segment.clip.sourceRange.cmTimeRange
-            try compositionTrack.insertTimeRange(sourceRange, of: sourceTrack, at: segment.clip.timelineStart.cmTime)
-            let timelineDuration = segment.clip.timelineDuration.cmTime
-            if segment.clip.playbackRate != 1 {
-                compositionTrack.scaleTimeRange(
-                    CMTimeRange(start: segment.clip.timelineStart.cmTime, duration: sourceRange.duration),
-                    toDuration: timelineDuration
+        do {
+            for segment in plan.videoSegments {
+                let sourceURL = try await resolver.resolvedURL(for: segment.media)
+                let preparedSource = try await colorRenderer.prepare(segment: segment, sourceURL: sourceURL)
+                if let temporaryURL = preparedSource.temporaryURL {
+                    temporaryVideoURLs.append(temporaryURL)
+                }
+                let asset = AVURLAsset(url: preparedSource.url)
+                let tracks = try await asset.load(.tracks)
+                guard let sourceTrack = tracks.first(where: { $0.mediaType == .video }),
+                      let compositionTrack = composition.addMutableTrack(
+                          withMediaType: .video,
+                          preferredTrackID: kCMPersistentTrackID_Invalid
+                      )
+                else {
+                    throw MediaSourceResolverError.unavailable(segment.media)
+                }
+                let sourceRange = preparedSource.sourceRange.cmTimeRange
+                try compositionTrack.insertTimeRange(sourceRange, of: sourceTrack, at: segment.clip.timelineStart.cmTime)
+                let timelineDuration = segment.clip.timelineDuration.cmTime
+                if segment.clip.playbackRate != 1 {
+                    compositionTrack.scaleTimeRange(
+                        CMTimeRange(start: segment.clip.timelineStart.cmTime, duration: sourceRange.duration),
+                        toDuration: timelineDuration
+                    )
+                }
+                let clipStart = segment.clip.timelineStart.cmTime
+                let clipEnd = CMTimeAdd(clipStart, timelineDuration)
+                var layerConfiguration = AVVideoCompositionLayerInstruction.Configuration(assetTrack: compositionTrack)
+                let transform = try await videoTransform(
+                    sourceTrack: sourceTrack,
+                    renderSize: renderSize,
+                    clipTransform: segment.clip.transform,
+                    contentMode: segment.clip.appearance?.contentMode ?? .fit
                 )
-            }
-            let clipStart = segment.clip.timelineStart.cmTime
-            let clipEnd = CMTimeAdd(clipStart, timelineDuration)
-            var layerConfiguration = AVVideoCompositionLayerInstruction.Configuration(assetTrack: compositionTrack)
-            let transform = try await videoTransform(
-                sourceTrack: sourceTrack,
-                renderSize: renderSize,
-                clipTransform: segment.clip.transform,
-                contentMode: segment.clip.appearance?.contentMode ?? .fit
-            )
-            layerConfiguration.setTransform(transform, at: clipStart)
-            if let crop = segment.clip.appearance?.crop,
-               crop.clamped() != .fullFrame {
-                let naturalSize = try await sourceTrack.load(.naturalSize)
-                let normalizedCrop = crop.clamped()
-                let cropRect = CGRect(
-                    x: naturalSize.width * normalizedCrop.x,
-                    y: naturalSize.height * normalizedCrop.y,
-                    width: naturalSize.width * normalizedCrop.width,
-                    height: naturalSize.height * normalizedCrop.height
+                layerConfiguration.setTransform(transform, at: clipStart)
+                if let crop = segment.clip.appearance?.crop,
+                   crop.clamped() != .fullFrame {
+                    let naturalSize = try await sourceTrack.load(.naturalSize)
+                    let normalizedCrop = crop.clamped()
+                    let cropRect = CGRect(
+                        x: naturalSize.width * normalizedCrop.x,
+                        y: naturalSize.height * normalizedCrop.y,
+                        width: naturalSize.width * normalizedCrop.width,
+                        height: naturalSize.height * normalizedCrop.height
+                    )
+                    layerConfiguration.setCropRectangle(cropRect, at: clipStart)
+                }
+                applyTransitionOpacity(
+                    to: &layerConfiguration,
+                    clip: segment.clip,
+                    start: clipStart,
+                    end: clipEnd,
+                    timing: transitionTimings[segment.clip.id] ?? ClipTransitionTiming()
                 )
-                layerConfiguration.setCropRectangle(cropRect, at: clipStart)
+                videoLayers.append(CompositionVideoLayer(
+                    segment: segment,
+                    compositionTrack: compositionTrack,
+                    layerInstruction: AVVideoCompositionLayerInstruction(configuration: layerConfiguration)
+                ))
             }
-            applyTransitionOpacity(
-                to: &layerConfiguration,
-                clip: segment.clip,
-                start: clipStart,
-                end: clipEnd
-            )
-            let layerInstruction = AVVideoCompositionLayerInstruction(configuration: layerConfiguration)
-            var instructionConfiguration = AVVideoCompositionInstruction.Configuration()
-            instructionConfiguration.timeRange = CMTimeRange(
-                start: segment.clip.timelineStart.cmTime,
-                duration: timelineDuration
-            )
-            instructionConfiguration.layerInstructions = [layerInstruction]
-            let instruction = AVVideoCompositionInstruction(configuration: instructionConfiguration)
-            instructions.append(instruction)
+        } catch {
+            for url in temporaryVideoURLs {
+                try? FileManager.default.removeItem(at: url)
+            }
+            throw error
         }
 
         for segment in plan.audioSegments {
@@ -290,7 +322,7 @@ private struct CompositionBuilder {
 
         var videoConfiguration = AVVideoComposition.Configuration()
         videoConfiguration.frameDuration = CMTime(value: 1, timescale: CMTimeScale(settings.frameRate.rawValue))
-        videoConfiguration.instructions = instructions.sorted { $0.timeRange.start < $1.timeRange.start }
+        videoConfiguration.instructions = videoInstructions(for: videoLayers)
         videoConfiguration.renderSize = renderSize
         let videoComposition = AVVideoComposition(configuration: videoConfiguration)
         let audioMix: AVMutableAudioMix?
@@ -304,8 +336,66 @@ private struct CompositionBuilder {
         return BuiltComposition(
             composition: composition,
             videoComposition: videoComposition,
-            audioMix: audioMix
+            audioMix: audioMix,
+            temporaryVideoURLs: temporaryVideoURLs
         )
+    }
+
+    private func videoInstructions(
+        for layers: [CompositionVideoLayer]
+    ) -> [AVVideoCompositionInstructionProtocol] {
+        let boundaries = Array(Set(layers.flatMap {
+            [$0.timelineRange.start, TimelineTime(seconds: $0.timelineRange.start.seconds + $0.timelineRange.duration.seconds)]
+        })).sorted()
+        guard boundaries.count > 1 else { return [] }
+
+        return zip(boundaries, boundaries.dropFirst()).compactMap { start, end in
+            let activeLayers = layers.filter { layer in
+                layer.timelineRange.start <= start
+                    && TimelineTime(seconds: layer.timelineRange.start.seconds + layer.timelineRange.duration.seconds) > start
+            }
+            guard !activeLayers.isEmpty else { return nil }
+            // AVFoundation applies the first layer instruction on top. A higher
+            // video-track index is therefore listed first; within one track an
+            // outgoing clip stays first in an overlap so its opacity ramp reveals
+            // the incoming clip beneath it.
+            let orderedInstructions = activeLayers.sorted {
+                if $0.segment.trackIndex != $1.segment.trackIndex {
+                    return $0.segment.trackIndex > $1.segment.trackIndex
+                }
+                return $0.segment.clip.timelineStart < $1.segment.clip.timelineStart
+            }.map(\.layerInstruction)
+            var configuration = AVVideoCompositionInstruction.Configuration()
+            configuration.timeRange = CMTimeRange(
+                start: start.cmTime,
+                duration: CMTimeSubtract(end.cmTime, start.cmTime)
+            )
+            configuration.layerInstructions = orderedInstructions
+            return AVVideoCompositionInstruction(configuration: configuration)
+        }
+    }
+
+    private func transitionTimings(for segments: [ExportVideoSegment]) -> [UUID: ClipTransitionTiming] {
+        var timings = Dictionary(uniqueKeysWithValues: segments.map { ($0.clip.id, ClipTransitionTiming()) })
+        for trackSegments in Dictionary(grouping: segments, by: \.trackIndex).values {
+            let sorted = trackSegments.sorted { $0.clip.timelineStart < $1.clip.timelineStart }
+            for (outgoing, incoming) in zip(sorted, sorted.dropFirst()) {
+                let overlapStart = max(outgoing.clip.timelineStart.seconds, incoming.clip.timelineStart.seconds)
+                let overlapEnd = min(outgoing.clip.timelineEnd.seconds, incoming.clip.timelineEnd.seconds)
+                guard overlapEnd > overlapStart,
+                      outgoing.clip.transitionOut == .crossDissolve || incoming.clip.transitionIn == .crossDissolve
+                else {
+                    continue
+                }
+                let range = MediaTimeRange(
+                    start: TimelineTime(seconds: overlapStart),
+                    duration: TimelineTime(seconds: min(0.35, overlapEnd - overlapStart))
+                )
+                timings[outgoing.clip.id]?.outgoing = range
+                timings[incoming.clip.id]?.incoming = range
+            }
+        }
+        return timings
     }
 
     private func videoTransform(
@@ -369,33 +459,51 @@ private struct CompositionBuilder {
         to configuration: inout AVVideoCompositionLayerInstruction.Configuration,
         clip: TimelineClip,
         start: CMTime,
-        end: CMTime
+        end: CMTime,
+        timing: ClipTransitionTiming
     ) {
         let opacity = Float(min(1, max(0, clip.opacity)))
         let maximumDuration = min(0.35, max(0, clip.timelineDuration.seconds / 2))
         let transitionDuration = CMTime(seconds: maximumDuration, preferredTimescale: 600)
 
-        switch clip.transitionIn {
-        case .hardCut:
-            configuration.setOpacity(opacity, at: start)
-        case .crossDissolve, .dipToBlack:
-            configuration.setOpacity(0, at: start)
+        if let incoming = timing.incoming {
+            configuration.setOpacity(0, at: incoming.start.cmTime)
             configuration.addOpacityRamp(.init(
-                timeRange: CMTimeRange(start: start, duration: transitionDuration),
+                timeRange: incoming.cmTimeRange,
                 start: 0,
                 end: opacity
             ))
+        } else {
+            switch clip.transitionIn {
+            case .hardCut, .crossDissolve:
+                configuration.setOpacity(opacity, at: start)
+            case .dipToBlack:
+                configuration.setOpacity(0, at: start)
+                configuration.addOpacityRamp(.init(
+                    timeRange: CMTimeRange(start: start, duration: transitionDuration),
+                    start: 0,
+                    end: opacity
+                ))
+            }
         }
-        switch clip.transitionOut {
-        case .hardCut:
-            break
-        case .crossDissolve, .dipToBlack:
-            let transitionStart = CMTimeSubtract(end, transitionDuration)
+        if let outgoing = timing.outgoing {
             configuration.addOpacityRamp(.init(
-                timeRange: CMTimeRange(start: transitionStart, duration: transitionDuration),
+                timeRange: outgoing.cmTimeRange,
                 start: opacity,
                 end: 0
             ))
+        } else {
+            switch clip.transitionOut {
+            case .hardCut, .crossDissolve:
+                break
+            case .dipToBlack:
+                let transitionStart = CMTimeSubtract(end, transitionDuration)
+                configuration.addOpacityRamp(.init(
+                    timeRange: CMTimeRange(start: transitionStart, duration: transitionDuration),
+                    start: opacity,
+                    end: 0
+                ))
+            }
         }
     }
 

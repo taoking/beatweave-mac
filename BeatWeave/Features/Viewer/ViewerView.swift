@@ -2,6 +2,7 @@ import AVKit
 import SwiftUI
 
 struct ViewerView: View {
+    let project: ProjectFile
     let selectedMedia: MediaReference?
     @Bindable var playback: PlaybackService
 
@@ -10,18 +11,18 @@ struct ViewerView: View {
             PlayerContainer(player: playback.player)
                 .background(.black)
                 .overlay {
-                    if selectedMedia == nil {
+                    if playback.previewKind == nil {
                         ContentUnavailableView(
-                            "选择一个媒体以预览",
+                            "选择预览来源",
                             systemImage: "play.rectangle",
-                            description: Text("从左侧导入视频或音频文件。")
+                            description: Text("可预览左侧选中的媒体，或播放整个项目时间线。")
                         )
                         .foregroundStyle(.white.opacity(0.9))
                     }
                 }
             Divider()
             HStack {
-                Text(selectedMedia?.displayName ?? "未选择媒体")
+                Text(previewTitle)
                     .lineLimit(1)
                 if playback.isUsingProxy {
                     Label("代理预览", systemImage: "bolt.horizontal.circle.fill")
@@ -34,7 +35,19 @@ struct ViewerView: View {
                 } label: {
                     Label("播放或暂停", systemImage: "playpause")
                 }
-                .disabled(selectedMedia == nil)
+                .disabled(playback.previewKind == nil)
+                Menu {
+                    Button("预览所选媒体") {
+                        playback.preview(selectedMedia)
+                    }
+                    .disabled(selectedMedia == nil)
+                    Button("播放项目时间线") {
+                        playback.previewTimeline(project)
+                    }
+                    .disabled(project.timeline.videoTracks.allSatisfy { $0.clips.isEmpty })
+                } label: {
+                    Label("预览来源", systemImage: "rectangle.on.rectangle")
+                }
             }
             .padding(10)
         }
@@ -50,6 +63,15 @@ struct ViewerView: View {
             }
         } message: {
             Text(playback.errorMessage ?? "未知错误")
+        }
+    }
+
+    private var previewTitle: String {
+        switch playback.previewKind {
+        case .timeline:
+            "项目时间线"
+        case .media, nil:
+            selectedMedia?.displayName ?? "未选择媒体"
         }
     }
 }

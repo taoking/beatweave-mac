@@ -29,7 +29,7 @@ struct ProjectEditorView: View {
         } detail: {
             HSplitView {
                 VStack(spacing: 0) {
-                    ViewerView(selectedMedia: selectedMedia, playback: playback)
+                    ViewerView(project: document.project, selectedMedia: selectedMedia, playback: playback)
                     WaveformTimelineView(
                         music: musicMedia,
                         cache: musicMedia.flatMap { document.waveformCaches[$0.id] },

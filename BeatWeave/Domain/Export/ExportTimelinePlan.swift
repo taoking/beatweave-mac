@@ -3,6 +3,8 @@ import Foundation
 struct ExportVideoSegment: Equatable, Sendable {
     var clip: TimelineClip
     var media: MediaReference
+    /// Higher-index video tracks are rendered above lower-index tracks.
+    var trackIndex: Int
 }
 
 struct ExportAudioSegment: Equatable, Sendable {
@@ -27,7 +29,6 @@ enum ExportTimelinePlanError: LocalizedError, Equatable {
     case noVideoClips
     case missingMedia(UUID)
     case nonVideoMediaOnVideoTrack(UUID)
-    case overlappingVideoClips
 
     var errorDescription: String? {
         switch self {
@@ -37,8 +38,6 @@ enum ExportTimelinePlanError: LocalizedError, Equatable {
             "时间线引用的媒体（\(id.uuidString)）不在项目媒体库中。"
         case let .nonVideoMediaOnVideoTrack(id):
             "媒体（\(id.uuidString)）不是视频，不能放在视频轨导出。"
-        case .overlappingVideoClips:
-            "当前 MVP 不支持同一视频轨上的重叠剪辑，请先调整剪辑位置。"
         }
     }
 }
@@ -46,21 +45,26 @@ enum ExportTimelinePlanError: LocalizedError, Equatable {
 enum ExportTimelinePlanner {
     static func makePlan(for project: ProjectFile) throws -> ExportTimelinePlan {
         let mediaByID = Dictionary(uniqueKeysWithValues: project.mediaLibrary.items.map { ($0.id, $0) })
-        let videoClips = project.timeline.videoTracks.flatMap(\.clips).sorted { $0.timelineStart < $1.timelineStart }
-        guard !videoClips.isEmpty else {
+        let tracksWithClips = project.timeline.videoTracks.enumerated().filter { !$0.element.clips.isEmpty }
+        guard !tracksWithClips.isEmpty else {
             throw ExportTimelinePlanError.noVideoClips
         }
-        let videoSegments = try videoClips.map { clip -> ExportVideoSegment in
-            guard let media = mediaByID[clip.mediaID] else {
-                throw ExportTimelinePlanError.missingMedia(clip.mediaID)
+        var videoSegments: [ExportVideoSegment] = []
+        for (trackIndex, track) in tracksWithClips {
+            for clip in track.clips.sorted(by: { $0.timelineStart < $1.timelineStart }) {
+                guard let media = mediaByID[clip.mediaID] else {
+                    throw ExportTimelinePlanError.missingMedia(clip.mediaID)
+                }
+                guard media.kind == .video else {
+                    throw ExportTimelinePlanError.nonVideoMediaOnVideoTrack(clip.mediaID)
+                }
+                videoSegments.append(ExportVideoSegment(clip: clip, media: media, trackIndex: trackIndex))
             }
-            guard media.kind == .video else {
-                throw ExportTimelinePlanError.nonVideoMediaOnVideoTrack(clip.mediaID)
-            }
-            return ExportVideoSegment(clip: clip, media: media)
         }
-        guard !hasOverlaps(videoSegments.map(\.clip)) else {
-            throw ExportTimelinePlanError.overlappingVideoClips
+        videoSegments.sort {
+            $0.clip.timelineStart == $1.clip.timelineStart
+                ? $0.trackIndex < $1.trackIndex
+                : $0.clip.timelineStart < $1.clip.timelineStart
         }
 
         let audioSegments = try project.timeline.audioTracks.flatMap(\.clips).map { clip -> ExportAudioSegment in
@@ -85,12 +89,6 @@ enum ExportTimelinePlanner {
         )
     }
 
-    private static func hasOverlaps(_ clips: [TimelineClip]) -> Bool {
-        for (current, next) in zip(clips, clips.dropFirst()) where current.timelineEnd > next.timelineStart {
-            return true
-        }
-        return false
-    }
 }
 
 enum ExportResolutionPreset: String, CaseIterable, Identifiable, Sendable {

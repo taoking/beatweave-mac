@@ -28,7 +28,7 @@ final class ExportTimelinePlannerTests: XCTestCase {
         XCTAssertEqual(plan.duration.seconds, 4, accuracy: 0.001)
     }
 
-    func testPlanRejectsOverlappingVideoClips() {
+    func testPlanAllowsOverlappingVideoClipsOnTheSameTrack() throws {
         let video = MediaReference(
             displayName: "overlap.mov",
             originalURL: URL(fileURLWithPath: "/fixtures/overlap.mov"),
@@ -42,9 +42,37 @@ final class ExportTimelinePlannerTests: XCTestCase {
             clip(mediaID: video.id, start: 2, duration: 3)
         ])]
 
-        XCTAssertThrowsError(try ExportTimelinePlanner.makePlan(for: project)) { error in
-            XCTAssertEqual(error as? ExportTimelinePlanError, .overlappingVideoClips)
-        }
+        let plan = try ExportTimelinePlanner.makePlan(for: project)
+
+        XCTAssertEqual(plan.videoSegments.count, 2)
+        XCTAssertEqual(plan.videoSegments.map(\.trackIndex), [0, 0])
+        XCTAssertEqual(plan.duration.seconds, 5, accuracy: 0.001)
+    }
+
+    func testPlanPreservesVideoTrackOrderForLayeredExports() throws {
+        let lower = MediaReference(
+            displayName: "lower.mov",
+            originalURL: URL(fileURLWithPath: "/fixtures/lower.mov"),
+            kind: .video,
+            duration: TimelineTime(seconds: 10)
+        )
+        let upper = MediaReference(
+            displayName: "upper.mov",
+            originalURL: URL(fileURLWithPath: "/fixtures/upper.mov"),
+            kind: .video,
+            duration: TimelineTime(seconds: 10)
+        )
+        var project = ProjectFile.new()
+        project.mediaLibrary.items = [lower, upper]
+        project.timeline.videoTracks = [
+            VideoTrack(clips: [clip(mediaID: lower.id, start: 0, duration: 2)]),
+            VideoTrack(clips: [clip(mediaID: upper.id, start: 0, duration: 2)])
+        ]
+
+        let plan = try ExportTimelinePlanner.makePlan(for: project)
+
+        XCTAssertEqual(plan.videoSegments.map(\.media.id), [lower.id, upper.id])
+        XCTAssertEqual(plan.videoSegments.map(\.trackIndex), [0, 1])
     }
 
     func testPlanRejectsMissingVideoMedia() {

@@ -1,3 +1,4 @@
+import AppKit
 import AVFoundation
 import CoreVideo
 import XCTest
@@ -86,7 +87,7 @@ final class ExportServiceTests: XCTestCase {
             width: 64,
             height: 64,
             frameRate: .fps30,
-            quality: .medium
+            quality: .high
         )
 
         let result = try await ExportService().export(project: project, to: outputURL)
@@ -147,7 +148,158 @@ final class ExportServiceTests: XCTestCase {
         XCTAssertEqual(naturalSize, CGSize(width: 64, height: 64))
     }
 
-    private func makeVideo(at url: URL) async throws {
+    func testExportCompositesOverlappedCrossDissolveAndLayeredVideoTracks() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appending(path: "BeatWeaveTransitionExport-\(UUID().uuidString)", directoryHint: .isDirectory)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let redURL = directory.appending(path: "red.mov")
+        let blueURL = directory.appending(path: "blue.mov")
+        let greenURL = directory.appending(path: "green.mov")
+        let outputURL = directory.appending(path: "result.mp4")
+        try await makeVideo(at: redURL, color: (red: 255, green: 0, blue: 0))
+        try await makeVideo(at: blueURL, color: (red: 0, green: 0, blue: 255))
+        try await makeVideo(at: greenURL, color: (red: 0, green: 255, blue: 0))
+
+        let red = videoReference(name: "red.mov", url: redURL)
+        let blue = videoReference(name: "blue.mov", url: blueURL)
+        let green = videoReference(name: "green.mov", url: greenURL)
+        var project = ProjectFile.new()
+        project.mediaLibrary.items = [red, blue, green]
+        project.timeline.videoTracks = [
+            VideoTrack(clips: [
+                clip(mediaID: red.id, start: 0, duration: 1, transitionOut: .crossDissolve),
+                clip(mediaID: blue.id, start: 0.65, duration: 1, transitionIn: .crossDissolve)
+            ]),
+            VideoTrack(clips: [clip(mediaID: green.id, start: 1.4, duration: 0.25)])
+        ]
+        project.exportSettings = exportSettings
+
+        _ = try await ExportService().export(project: project, to: outputURL)
+        let exportedAsset = AVURLAsset(url: outputURL)
+        let exportedTracks = try await exportedAsset.load(.tracks)
+        let exportedVideo = try XCTUnwrap(exportedTracks.first(where: { $0.mediaType == .video }))
+        let exportedDuration = try await exportedAsset.load(.duration).seconds
+        let videoDuration = try await exportedVideo.load(.timeRange).duration.seconds
+        XCTAssertEqual(exportedDuration, 1.65, accuracy: 0.1)
+        XCTAssertEqual(videoDuration, 1.65, accuracy: 0.1)
+
+        let dissolve = try await color(at: 0.82, in: outputURL)
+        XCTAssertGreaterThan(dissolve.red, 0.12)
+        XCTAssertGreaterThan(dissolve.blue, 0.12)
+        let upperTrack = try await color(at: 1.5, in: outputURL)
+        XCTAssertGreaterThan(upperTrack.green, 0.35)
+        XCTAssertLessThan(upperTrack.red, 0.2)
+        XCTAssertLessThan(upperTrack.blue, 0.2)
+    }
+
+    func testExportRendersBasicColorAndCubeLUTPerClip() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appending(path: "BeatWeaveColorExport-\(UUID().uuidString)", directoryHint: .isDirectory)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let redURL = directory.appending(path: "red.mov")
+        let blueURL = directory.appending(path: "blue.mov")
+        let cubeURL = directory.appending(path: "black.cube")
+        let outputURL = directory.appending(path: "result.mp4")
+        try await makeVideo(at: redURL, color: (red: 255, green: 0, blue: 0))
+        try await makeVideo(at: blueURL, color: (red: 0, green: 0, blue: 255))
+        try Data("""
+        LUT_3D_SIZE 2
+        0 0 0
+        0 0 0
+        0 0 0
+        0 0 0
+        0 0 0
+        0 0 0
+        0 0 0
+        0 0 0
+        """.utf8).write(to: cubeURL)
+
+        let red = videoReference(name: "red.mov", url: redURL)
+        let blue = videoReference(name: "blue.mov", url: blueURL)
+        var grayscaleAppearance = ClipAppearance.default
+        grayscaleAppearance.color.saturation = 0
+        var lutAppearance = ClipAppearance.default
+        lutAppearance.lut = LUTReference(displayName: "black.cube", fileURL: cubeURL, intensity: 1)
+        var project = ProjectFile.new()
+        project.mediaLibrary.items = [red, blue]
+        project.timeline.videoTracks = [VideoTrack(clips: [
+            clip(mediaID: red.id, start: 0, duration: 1, appearance: grayscaleAppearance),
+            clip(mediaID: blue.id, start: 1, duration: 1, appearance: lutAppearance)
+        ])]
+        project.exportSettings = exportSettings
+
+        _ = try await ExportService().export(project: project, to: outputURL)
+
+        let grayscale = try await color(at: 0.5, in: outputURL)
+        XCTAssertLessThan(abs(grayscale.red - grayscale.green), 0.12)
+        XCTAssertLessThan(abs(grayscale.green - grayscale.blue), 0.12)
+        let blackLUT = try await color(at: 1.5, in: outputURL)
+        XCTAssertLessThan(max(blackLUT.red, blackLUT.green, blackLUT.blue), 0.2)
+    }
+
+    private var exportSettings: ExportSettings {
+        ExportSettings(
+            codec: .h264,
+            width: 64,
+            height: 64,
+            frameRate: .fps30,
+            quality: .medium
+        )
+    }
+
+    private func videoReference(name: String, url: URL) -> MediaReference {
+        MediaReference(
+            displayName: name,
+            originalURL: url,
+            kind: .video,
+            duration: TimelineTime(seconds: 1)
+        )
+    }
+
+    private func clip(
+        mediaID: UUID,
+        start: Double,
+        duration: Double,
+        transitionIn: Transition = .hardCut,
+        transitionOut: Transition = .hardCut,
+        appearance: ClipAppearance? = nil
+    ) -> TimelineClip {
+        TimelineClip(
+            id: UUID(),
+            mediaID: mediaID,
+            sourceRange: MediaTimeRange(start: .zero, duration: TimelineTime(seconds: duration)),
+            timelineStart: TimelineTime(seconds: start),
+            playbackRate: 1,
+            transform: .identity,
+            opacity: 1,
+            volume: 1,
+            transitionIn: transitionIn,
+            transitionOut: transitionOut,
+            appearance: appearance
+        )
+    }
+
+    private func color(at seconds: Double, in url: URL) async throws -> (red: Double, green: Double, blue: Double) {
+        let generator = AVAssetImageGenerator(asset: AVURLAsset(url: url))
+        generator.appliesPreferredTrackTransform = true
+        generator.requestedTimeToleranceBefore = .zero
+        generator.requestedTimeToleranceAfter = .zero
+        let result = try await generator.image(
+            at: CMTime(seconds: seconds, preferredTimescale: 600)
+        )
+        let image = result.image
+        let bitmap = try XCTUnwrap(NSBitmapImageRep(cgImage: image))
+        let color = try XCTUnwrap(bitmap.colorAt(x: bitmap.pixelsWide / 2, y: bitmap.pixelsHigh / 2))
+        let calibrated = color.usingColorSpace(.sRGB) ?? color
+        return (Double(calibrated.redComponent), Double(calibrated.greenComponent), Double(calibrated.blueComponent))
+    }
+
+    private func makeVideo(
+        at url: URL,
+        color: (red: UInt8, green: UInt8, blue: UInt8)? = nil
+    ) async throws {
         let writer = try AVAssetWriter(outputURL: url, fileType: .mov)
         let settings: [String: Any] = [
             AVVideoCodecKey: AVVideoCodecType.h264,
@@ -185,7 +337,19 @@ final class ExportServiceTests: XCTestCase {
             XCTAssertEqual(creationResult, kCVReturnSuccess)
             let pixelBuffer = try XCTUnwrap(optionalBuffer)
             CVPixelBufferLockBaseAddress(pixelBuffer, [])
-            if let baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer) {
+            if let color, let baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer) {
+                let bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer)
+                let pixels = baseAddress.assumingMemoryBound(to: UInt8.self)
+                for y in 0..<64 {
+                    for x in 0..<64 {
+                        let offset = (y * bytesPerRow) + (x * 4)
+                        pixels[offset] = color.blue
+                        pixels[offset + 1] = color.green
+                        pixels[offset + 2] = color.red
+                        pixels[offset + 3] = 255
+                    }
+                }
+            } else if let baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer) {
                 memset(baseAddress, frame.isMultiple(of: 2) ? 0x22 : 0xAA, CVPixelBufferGetDataSize(pixelBuffer))
             }
             CVPixelBufferUnlockBaseAddress(pixelBuffer, [])

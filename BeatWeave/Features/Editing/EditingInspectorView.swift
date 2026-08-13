@@ -110,6 +110,9 @@ struct EditingInspectorView: View {
                     Picker("出场转场", selection: transitionOutBinding) {
                         transitionChoices
                     }
+                    Text("交叉叠化会在同一视频轨的相邻剪辑实际重叠时生效；请将两段剪辑拖动为重叠。")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                     Picker("速度", selection: playbackRateBinding) {
                         ForEach([0.25, 0.5, 1, 2, 4], id: \.self) { rate in
                             Text("\(rate, format: .number.precision(.fractionLength(2)))×").tag(rate)
