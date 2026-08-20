@@ -15,6 +15,13 @@
 | Phase 8 — Smart montage | 已完成 | 素材质量分析与自适应 AutoCut |
 | Phase 9 — Performance and professional workflow | 已完成 | 代理、恢复、诊断、多轨与高级工作流 |
 
+## 启动稳定性与默认项目（2026-08-21）
+
+- 已移除 macOS 27 beta 上会在启动时触发尺寸约束崩溃的嵌套 SwiftUI 分栏容器，改用稳定的三栏编辑布局。
+- 启动现在直接打开并持久化默认项目；默认保存在应用安全存储中，用户可在“项目工作流”中选择并记忆任意默认项目目录。
+- `DEVELOPER_DIR=/Users/tao/Downloads/Xcode-beta.app/Contents/Developer xcodebuild ... test CODE_SIGNING_ALLOWED=NO`：61 项测试通过（新增默认项目创建、写回与重开测试）。
+- `DEVELOPER_DIR=/Users/tao/Downloads/Xcode-beta.app/Contents/Developer xcodebuild ... -configuration Release build CODE_SIGNING_ALLOWED=NO`：成功，产物为 macOS 27 arm64 app；本机启动后持续运行 8 秒，未生成新的崩溃报告。自动 GUI 驱动当前无法取得任何系统窗口，主界面仍需用户手动验收。
+
 不在完成标记前宣称对应功能可用。每阶段完成后记录构建、测试和人工验证情况。
 
 ## Phase 0 验证（2026-08-13）

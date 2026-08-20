@@ -19,7 +19,10 @@ struct BeatWeaveDocument: FileDocument {
     }
 
     init(configuration: ReadConfiguration) throws {
-        let contents = try ProjectPackage.readContents(from: configuration.file)
+        self.init(contents: try ProjectPackage.readContents(from: configuration.file))
+    }
+
+    init(contents: ProjectPackageContents) {
         project = contents.project
         waveformCaches = contents.waveformCaches
         thumbnailCaches = contents.thumbnailCaches

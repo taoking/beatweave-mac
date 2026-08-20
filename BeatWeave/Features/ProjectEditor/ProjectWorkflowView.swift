@@ -3,6 +3,8 @@ import SwiftUI
 struct ProjectWorkflowView: View {
     @Binding var project: ProjectFile
     let recoveredFromBackup: Bool
+    let defaultProjectDirectory: URL
+    let onChooseDefaultDirectory: () -> Void
     let onProjectMutation: () -> Void
 
     private var diagnostics: ProjectDiagnostics {
@@ -22,6 +24,17 @@ struct ProjectWorkflowView: View {
                 }
                 DisclosureGroup("项目诊断") {
                     diagnosticsView
+                }
+                DisclosureGroup("默认项目目录") {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(defaultProjectDirectory.path)
+                            .font(.caption)
+                            .textSelection(.enabled)
+                            .lineLimit(2)
+                        Button("更改默认目录…", action: onChooseDefaultDirectory)
+                            .controlSize(.small)
+                    }
+                    .padding(.top, 4)
                 }
             }
         }

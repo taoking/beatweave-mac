@@ -20,7 +20,7 @@ xcodebuild -project BeatWeave.xcodeproj -scheme BeatWeave -configuration Debug t
 
 本地开发机若只有 macOS 26.5 SDK，可临时追加 `MACOSX_DEPLOYMENT_TARGET=26.5` 来运行基础测试；这仅用于验证代码，发布构建仍须使用支持 macOS 27 的 SDK。
 
-打开 `BeatWeave.xcodeproj` 后运行 `BeatWeave` scheme。通过“新建”创建项目；文档会以 `.beatweave` 包保存，其中 `project.json` 是唯一权威的持久化编辑状态。
+打开 `BeatWeave.xcodeproj` 后运行 `BeatWeave` scheme。应用会立即打开并自动保存一个默认项目，不要求启动时选择目录；可在右侧“项目工作流 → 默认项目目录”中改为任意文件夹，选择会被记忆。项目以 `.beatweave` 包保存，其中 `project.json` 是唯一权威的持久化编辑状态。
 
 ## 项目包
 

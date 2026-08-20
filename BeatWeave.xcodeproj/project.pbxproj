@@ -47,6 +47,7 @@
 		B7849A5F4CCAE726647C3C40 /* ProjectDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 192F754355FE100CCF1790AD /* ProjectDiagnostics.swift */; };
 		BB07E17C8D120B184AD362B0 /* MediaBrowserModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F586952C78AABC6C27F5A9EC /* MediaBrowserModel.swift */; };
 		BB0C197811077DFF5F325374 /* MediaBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 506C75F64E1F01D03BA5F7E1 /* MediaBrowserView.swift */; };
+		BCC2BE2F751E5DA53D40B4B3 /* DefaultProjectStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34C38F733194DC06F6B1B928 /* DefaultProjectStore.swift */; };
 		BDB36E0C49B44E2E457FD794 /* BeatWeaveApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611BD4A23FCFA669B3884C17 /* BeatWeaveApp.swift */; };
 		BEBADF7121BA66F7AA6F8408 /* MediaImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52861946BF4A17382773693F /* MediaImportService.swift */; };
 		BED3722D30B7F4084314F1CF /* WaveformCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F231267CD3862AB2F5421F7 /* WaveformCache.swift */; };
@@ -60,6 +61,7 @@
 		ED111B20D95075282318E8F8 /* ThumbnailService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5BE59067415F0CC4E004758 /* ThumbnailService.swift */; };
 		F0EA289D138C8E241C0391DD /* EditingInspectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4C9A7BDDFB35DDA9A0245E /* EditingInspectorView.swift */; };
 		F17438F4B8338F026FFA48A7 /* LUTCube.swift in Sources */ = {isa = PBXBuildFile; fileRef = B790EFA709F65706B38CF9E1 /* LUTCube.swift */; };
+		F2ED841CF0C0D77AE8A64153 /* DefaultProjectStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DB8686BCD11D54E92F5B60C /* DefaultProjectStoreTests.swift */; };
 		F3381DCD64F5CD603AC219D4 /* ProjectWorkflowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D9F3FBD18B09FEA18099FD /* ProjectWorkflowView.swift */; };
 /* End PBXBuildFile section */
 
@@ -82,6 +84,7 @@
 		1CCC84DFA8C41DA7ADB1F11E /* WaveformService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformService.swift; sourceTree = "<group>"; };
 		2F8AA932DCA910E48B90D439 /* ProxyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyService.swift; sourceTree = "<group>"; };
 		34A9DE88A3C1B7D1CF630AAC /* TimelineEditorModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineEditorModel.swift; sourceTree = "<group>"; };
+		34C38F733194DC06F6B1B928 /* DefaultProjectStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultProjectStore.swift; sourceTree = "<group>"; };
 		37FE77FAA38CF49A3BEFE856 /* ExportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportServiceTests.swift; sourceTree = "<group>"; };
 		381A30C7AAAEF00F15E71A61 /* TimelineEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineEngineTests.swift; sourceTree = "<group>"; };
 		3AEBA8E88C10D3F5C2A465D2 /* MediaLibraryEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaLibraryEditor.swift; sourceTree = "<group>"; };
@@ -103,6 +106,7 @@
 		85AD6EDCD49343EB2D67EF5A /* WaveformServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformServiceTests.swift; sourceTree = "<group>"; };
 		88FFBAFC215E4A5E1AB48F20 /* ProxyCacheStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyCacheStore.swift; sourceTree = "<group>"; };
 		8D3330DEEF59DA038A08E208 /* ProjectCodecTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectCodecTests.swift; sourceTree = "<group>"; };
+		8DB8686BCD11D54E92F5B60C /* DefaultProjectStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultProjectStoreTests.swift; sourceTree = "<group>"; };
 		92AF823696F7F7B5463406E2 /* ProjectEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectEditorView.swift; sourceTree = "<group>"; };
 		A013ECBF797103856FDCA4DE /* TimelineEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineEngine.swift; sourceTree = "<group>"; };
 		AA4C9A7BDDFB35DDA9A0245E /* EditingInspectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditingInspectorView.swift; sourceTree = "<group>"; };
@@ -153,6 +157,14 @@
 				ED50C8DEEA618E44CCB31C85 /* WaveformTimelineView.swift */,
 			);
 			path = Waveform;
+			sourceTree = "<group>";
+		};
+		19FFFE683E8350E1A1281EB7 /* Project */ = {
+			isa = PBXGroup;
+			children = (
+				34C38F733194DC06F6B1B928 /* DefaultProjectStore.swift */,
+			);
+			path = Project;
 			sourceTree = "<group>";
 		};
 		25370A447E4D8E2341F64E2E /* Products */ = {
@@ -229,6 +241,7 @@
 				2EC2BBFEFC26B2646DA376BA /* Export */,
 				F86B8036768041BFE9EE1014 /* Media */,
 				DCDFB81CF12BA8C4C35B2D5A /* Playback */,
+				19FFFE683E8350E1A1281EB7 /* Project */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -346,6 +359,7 @@
 				E10E2FE9DF72C9C845CBD4E3 /* AutoCutEngineTests.swift */,
 				F2313D304382695BB2276B78 /* BeatAnalysisDSPTests.swift */,
 				BCBF9EDCDB6B49237E260076 /* BeatAnalysisServiceTests.swift */,
+				8DB8686BCD11D54E92F5B60C /* DefaultProjectStoreTests.swift */,
 				719B3EC83C8A43E3A45B2D2D /* EditingControlsTests.swift */,
 				37FE77FAA38CF49A3BEFE856 /* ExportServiceTests.swift */,
 				44154891EB49ACC592FC7893 /* ExportTimelinePlannerTests.swift */,
@@ -484,6 +498,7 @@
 				45883B3ED56407FC9E2155CB /* AutoCutEngineTests.swift in Sources */,
 				2F19C3A0584BEB70BE62DE87 /* BeatAnalysisDSPTests.swift in Sources */,
 				21097EC2A559C7ABF3E24F52 /* BeatAnalysisServiceTests.swift in Sources */,
+				F2ED841CF0C0D77AE8A64153 /* DefaultProjectStoreTests.swift in Sources */,
 				5F63B955D32DEF0CB2B4B3A6 /* EditingControlsTests.swift in Sources */,
 				A05F300C78411A57FA0880BA /* ExportServiceTests.swift in Sources */,
 				01AD28A0227E5DEC6B538759 /* ExportTimelinePlannerTests.swift in Sources */,
@@ -511,6 +526,7 @@
 				BDB36E0C49B44E2E457FD794 /* BeatWeaveApp.swift in Sources */,
 				22B595953AF65F4E32D52471 /* BeatWeaveDocument.swift in Sources */,
 				459AF101619F7B181AE1E06E /* ColorRenderService.swift in Sources */,
+				BCC2BE2F751E5DA53D40B4B3 /* DefaultProjectStore.swift in Sources */,
 				F0EA289D138C8E241C0391DD /* EditingInspectorView.swift in Sources */,
 				683765AF6F09C1E6149F3F12 /* ExportModel.swift in Sources */,
 				1EE30E7099DBA4CE5E3746FA /* ExportService.swift in Sources */,

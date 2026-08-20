@@ -2,9 +2,15 @@ import SwiftUI
 
 @main
 struct BeatWeaveApp: App {
+    @State private var projectStore = DefaultProjectStore()
+
     var body: some Scene {
-        DocumentGroup(newDocument: BeatWeaveDocument()) { file in
-            ProjectEditorView(document: file.$document)
+        WindowGroup {
+            ProjectEditorView(
+                document: $projectStore.document,
+                projectStore: projectStore
+            )
         }
+        .defaultSize(width: 1_360, height: 820)
     }
 }
